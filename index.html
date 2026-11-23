@@ -1,3 +1,4 @@
+html
 <!DOCTYPE html>
 <html lang="pt">
 <head>
@@ -55,6 +56,7 @@
     #toast { position: fixed; top: 64px; left: 50%; transform: translateX(-50%); background: linear-gradient(135deg, #00d2d3, #1dd1a1); color: #090d16; padding: 8px 18px; border-radius: 20px; font-weight: 800; font-size: 13px; display: none; z-index: 25; white-space: nowrap; }
     #lotador-calls { position: fixed; inset: 0; pointer-events: none; z-index: 14; overflow: hidden; }
     .lotador-shout { position: absolute; transform: translate(-50%, -100%); background: rgba(245, 185, 21, 0.94); color: #090d16; border: 2px solid #fff; border-radius: 16px; padding: 5px 11px; font-size: 11.5px; font-weight: 800; white-space: nowrap; pointer-events: auto; cursor: pointer; touch-action: manipulation; box-shadow: 0 6px 16px rgba(0,0,0,0.4); }
+    .zunga-shout { position: absolute; transform: translate(-50%, -100%); background: rgba(16, 172, 132, 0.92); color: #fff; border: 1.5px solid #feca57; border-radius: 14px; padding: 4px 9px; font-size: 11px; font-weight: 800; white-space: nowrap; pointer-events: none; box-shadow: 0 4px 12px rgba(0,0,0,0.35); }
     .marginal-shout { position: absolute; transform: translate(-50%, -100%); background: rgba(220, 38, 38, 0.95); color: #fff; border: 2px solid #feca57; border-radius: 16px; padding: 4px 10px; font-size: 11.5px; font-weight: 800; white-space: nowrap; pointer-events: none; box-shadow: 0 6px 16px rgba(0,0,0,0.5); }
     .police-shout { position: absolute; transform: translate(-50%, -100%); background: rgba(16, 27, 48, 0.95); color: #fff; border: 2px solid #3b82f6; border-radius: 16px; padding: 4px 10px; font-size: 11.5px; font-weight: 800; white-space: nowrap; pointer-events: none; box-shadow: 0 6px 16px rgba(0,0,0,0.5); }
     #npc-bubble { position: fixed; left: 0; top: 0; transform: translate(-50%, -100%); z-index: 18; display: none; pointer-events: auto; filter: drop-shadow(0 10px 24px rgba(0,0,0,0.5)); }
@@ -80,7 +82,7 @@
   </style>
 </head>
 <body>
-  <div id="loading-screen"><div style="font-size:32px;">🏙️</div><div style="font-weight:800; color:#00d2d3;">A carregar NeoCity 3D, Centralidade do Kilamba & Calemba 2...</div><div style="font-size:12px; color:#a4b0be;">A preparar os bairros, paragens, polícia e moradores</div></div>
+  <div id="loading-screen"><div style="font-size:32px;">🏙️</div><div style="font-weight:800; color:#00d2d3;">A carregar NeoCity 3D, Centralidade do Kilamba & Calemba 2...</div><div style="font-size:12px; color:#a4b0be;">A preparar os bairros, praça informal, paragens, polícia e moradores</div></div>
   <div id="login-screen">
     <div class="modal-card">
       <div style="font-size:36px; text-align:center;">🏙️🚐</div><h2>NeoCity — Luanda 3D</h2>
@@ -288,7 +290,7 @@
         }
         createKilambaSign(172, 0);
 
-        // UNIDADE DE SAÚDE — colocada no interior da cidade, junto à malha urbana
+        // UNIDADE DE SAÚDE
         function createHealthUnit(x, z) {
           const g = new THREE.Group();
           const wall = new THREE.MeshLambertMaterial({ color: 0x32c9e8 });
@@ -298,28 +300,23 @@
           const frame = new THREE.MeshLambertMaterial({ color: 0xeaf6f8 });
           const door = new THREE.MeshLambertMaterial({ color: 0x5b211d });
           const blue = new THREE.MeshLambertMaterial({ color: 0x164bd7 });
-          // Edifício térreo integrado à zona urbana da cidade
           mkBox(g, 44, 12, 32, wall, 0, 6, 0, true, true);
           mkBox(g, 46, 0.8, 34, roof, 0, 12.3, 0, true);
-          // Beiral frontal e cobertura da entrada
           mkBox(g, 18, 0.65, 7, roof, 0, 10.1, 19, true);
           [-7.5, 7.5].forEach(px => mkBox(g, 0.65, 9, 0.65, frame, px, 5.0, 20.5, true));
           mkBox(g, 18, 0.45, 0.65, frame, 0, 9.3, 20.5, true);
-          // Porta principal e janelas frontais
           mkBox(g, 4.2, 7.2, 0.35, door, 0, 3.8, 16.2, true);
           [-15, -8, 8, 15].forEach(px => {
             mkBox(g, 5.2, 4.8, 0.3, frame, px, 6.1, 16.25, true);
             mkBox(g, 4.45, 4.05, 0.12, glass, px, 6.1, 16.05);
             mkBox(g, 0.18, 4.1, 0.16, trim, px, 6.1, 15.95);
           });
-          // Janelas nas laterais
           [-9, 2, 11].forEach(pz => {
             mkBox(g, 0.3, 4.8, 5.4, frame, 22.15, 6.2, pz, true);
             mkBox(g, 0.12, 4.0, 4.5, glass, 22.0, 6.2, pz);
             mkBox(g, 0.3, 4.8, 5.4, frame, -22.15, 6.2, pz, true);
             mkBox(g, 0.12, 4.0, 4.5, glass, -22.0, 6.2, pz);
           });
-          // Placa identificativa acima da entrada
           const signTex = mkTex(768, 192, ctx => {
             const grad = ctx.createLinearGradient(0, 0, 768, 192);
             grad.addColorStop(0, '#073b63'); grad.addColorStop(1, '#087f9d');
@@ -335,7 +332,6 @@
           mkBox(g, 15.2, 4.2, 0.48, new THREE.MeshLambertMaterial({ color: 0x123b55 }), 0, 9.05, 16.55, true);
           const sign = new THREE.Mesh(new THREE.PlaneGeometry(14.8, 3.7), new THREE.MeshBasicMaterial({ map: signTex }));
           sign.position.set(0, 9.05, 16.30); g.add(sign);
-          // Pequena placa direcional e símbolo médico na entrada
           const infoTex = mkTex(256, 96, ctx => {
             ctx.fillStyle = '#f4d35e'; ctx.fillRect(0, 0, 256, 96);
             ctx.fillStyle = '#073b63'; ctx.font = '900 30px Arial'; ctx.textAlign = 'center';
@@ -343,13 +339,10 @@
           });
           const infoSign = new THREE.Mesh(new THREE.PlaneGeometry(4.8, 1.8), new THREE.MeshBasicMaterial({ map: infoTex }));
           infoSign.position.set(9.5, 4.2, 16.48); g.add(infoSign);
-          // Painel azul na fachada, inspirado na fotografia enviada
           mkBox(g, 4.8, 7.0, 0.18, blue, -18.2, 4.0, 16.3);
-          // Passeio e pequeno acesso
           mkBox(g, 52, 0.22, 9, new THREE.MeshLambertMaterial({ color: 0xbfc7c8 }), 0, 0.12, 23, false, true);
-          // Mastros e bandeiras
-          const poleMat = new THREE.MeshLambertMaterial({ color: 0x1688bd });
-          [-11, 11].forEach(px => mkBox(g, 0.35, 22, 0.35, poleMat, px, 11, 29, true));
+          const pMat = new THREE.MeshLambertMaterial({ color: 0x1688bd });
+          [-11, 11].forEach(px => mkBox(g, 0.35, 22, 0.35, pMat, px, 11, 29, true));
           const angolaTex = mkTex(256, 128, ctx => {
             ctx.fillStyle = '#d71920'; ctx.fillRect(0, 0, 256, 64);
             ctx.fillStyle = '#111111'; ctx.fillRect(0, 64, 256, 64);
@@ -368,21 +361,8 @@
           g.position.set(x, 0, z);
           scene.add(g);
         }
-        // Localização interior: entre as avenidas da zona urbana, próxima do Kilamba, sem ficar fora da cidade.
         createHealthUnit(160, 95);
 
-        // SEGURANÇA DA UNIDADE: viaturas estacionadas e agentes nos acessos
-        const healthPoliceCars = [
-          { x: 160, z: 130, angle: Math.PI },
-          { x: 200, z: 95, angle: -Math.PI / 2 },
-          { x: 130, z: 95, angle: Math.PI / 2 }
-        ];
-        healthPoliceCars.forEach(p => {
-          const patrolCar = createPoliciaNacional3D();
-          patrolCar.position.set(p.x, 0, p.z);
-          patrolCar.rotation.y = p.angle;
-          patrolCar.scale.set(0.92, 0.92, 0.92);
-        });
         const plots = [{ x: 25, z: 92, built: false }, { x: -25, z: 92, built: false }, { x: 92, z: -92, built: false }, { x: -92, z: -92, built: false }, { x: 245, z: -160, built: false }, { x: 335, z: 160, built: false }, { x: -245, z: 42, built: false }];
         plots.forEach(p => { p.pad = mkBox(scene, 18, 0.2, 18, new THREE.MeshLambertMaterial({ color: 0x00d2d3 }), p.x, 0.1, p.z); });
         function applyPlotBuild(idx, type) { const p = plots[idx]; if (!p || p.built) return; p.built = true; p.pad.visible = false; if (type === 'torre') createSkyscraper(p.x, p.z, 16, 58, 16, glassTex1); else if (type === 'loja') createSkyscraper(p.x, p.z, 18, 22, 18, glassTex2); else { createTree(p.x - 4, p.z - 4); createTree(p.x + 4, p.z + 4); } }
@@ -455,6 +435,160 @@
         }
         createCalembaNeighborhood();
 
+        // PRAÇA INFORMAL AO LADO DE CALEMBA 2
+        const MARKET_CX = -245, MARKET_CZ = 162.5;
+        function createCalembaInformalMarket() {
+          const g = new THREE.Group();
+          const marketFloorTex = mkTex(256, 256, ctx => {
+            ctx.fillStyle = '#5c554c'; ctx.fillRect(0, 0, 256, 256);
+            for (let i = 0; i < 1800; i++) {
+              const px = ((Math.sin(i * 19.7) * 43758.5) % 1 + 1) % 1 * 256;
+              const py = ((Math.sin(i * 67.3) * 43758.5) % 1 + 1) % 1 * 256;
+              ctx.fillStyle = i % 5 === 0 ? 'rgba(180,140,100,0.22)' : (i % 4 === 0 ? 'rgba(30,28,25,0.34)' : (i % 13 === 0 ? 'rgba(235,235,235,0.28)' : 'rgba(105,94,82,0.25)'));
+              ctx.fillRect(px, py, 2 + (i % 4), 2 + ((i * 2) % 3));
+            }
+            ctx.fillStyle = 'rgba(42,38,34,0.35)';
+            ctx.fillRect(0, 60, 256, 18); ctx.fillRect(90, 0, 22, 256);
+          });
+          marketFloorTex.wrapS = marketFloorTex.wrapT = THREE.RepeatWrapping; marketFloorTex.repeat.set(8, 5);
+          const mFloor = new THREE.Mesh(new THREE.PlaneGeometry(88, 52), new THREE.MeshLambertMaterial({ map: marketFloorTex }));
+          mFloor.rotation.x = -Math.PI / 2; mFloor.position.set(0, 0.03, 0); mFloor.receiveShadow = true; g.add(mFloor);
+
+          const pWood = new THREE.MeshLambertMaterial({ color: 0x6d4c41 });
+          mkBox(g, 0.45, 4.8, 0.45, pWood, -6.5, 2.4, -24.5, true);
+          mkBox(g, 0.45, 4.8, 0.45, pWood, 6.5, 2.4, -24.5, true);
+          const signTex = mkTex(512, 128, ctx => {
+            ctx.fillStyle = '#1e272e'; ctx.fillRect(0, 0, 512, 128);
+            ctx.strokeStyle = '#f39c12'; ctx.lineWidth = 8; ctx.strokeRect(4, 4, 504, 120);
+            ctx.fillStyle = '#feca57'; ctx.font = 'bold 34px Arial, sans-serif'; ctx.textAlign = 'center';
+            ctx.fillText('PRAÇA DE CALEMBA 2', 256, 54);
+            ctx.fillStyle = '#1dd1a1'; ctx.font = 'bold 20px Arial, sans-serif';
+            ctx.fillText('MERCADO INFORMAL • ZUNGUEIRAS', 256, 94);
+          });
+          const mSignMat = new THREE.MeshLambertMaterial({ map: signTex });
+          mkBox(g, 13.6, 2.4, 0.4, [pWood, pWood, pWood, pWood, mSignMat, mSignMat], 0, 4.4, -24.5, true);
+
+          const roughBlockTex = mkTex(256, 128, ctx => {
+            ctx.fillStyle = '#7f8487'; ctx.fillRect(0, 0, 256, 128);
+            ctx.strokeStyle = '#4f5457'; ctx.lineWidth = 2;
+            for (let y = 0; y < 128; y += 16) {
+              ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(256, y); ctx.stroke();
+              for (let x = (y % 32 === 0 ? 0 : 16); x < 256; x += 32) { ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x, y + 16); ctx.stroke(); }
+            }
+            for (let i = 0; i < 400; i++) {
+              ctx.fillStyle = i % 2 === 0 ? 'rgba(30,30,30,0.18)' : 'rgba(220,220,220,0.15)';
+              ctx.fillRect((i * 47) % 256, (i * 29) % 128, 4, 3);
+            }
+          });
+          const blockWallMat = new THREE.MeshLambertMaterial({ map: roughBlockTex });
+          const metalPostMat = new THREE.MeshLambertMaterial({ color: 0x222629 });
+          const darkZincMat = new THREE.MeshLambertMaterial({ map: zincRoofTex('#2d3136', '#1c1f22', 'rgba(95,46,20,0.55)'), side: THREE.DoubleSide });
+
+          mkBox(g, 52, 5.2, 0.65, blockWallMat, -4, 2.6, 23, true, true);
+          mkBox(g, 0.65, 5.2, 16, blockWallMat, 22, 2.6, 15, true, true);
+          mkBox(g, 24, 4.6, 0.55, blockWallMat, 10, 2.3, 12, true, true);
+
+          [-29, -20, -11, -2, 7, 16, 22].forEach(px => {
+            mkBox(g, 0.42, 7.2, 0.42, metalPostMat, px, 3.6, 7.5, true);
+            mkBox(g, 0.42, 6.2, 0.42, metalPostMat, px, 3.1, 22.8, true);
+          });
+          const roofLeft = new THREE.Mesh(new THREE.BoxGeometry(28, 0.25, 18.5), darkZincMat);
+          roofLeft.position.set(-16.5, 7.7, 15.2); roofLeft.rotation.z = 0.16; roofLeft.castShadow = true; g.add(roofLeft);
+          const roofRight = new THREE.Mesh(new THREE.BoxGeometry(28, 0.25, 18.5), darkZincMat);
+          roofRight.position.set(10.5, 7.7, 15.2); roofRight.rotation.z = -0.16; roofRight.castShadow = true; g.add(roofRight);
+
+          const sackMat = new THREE.MeshLambertMaterial({ color: 0x3b3834 });
+          const sackLightMat = new THREE.MeshLambertMaterial({ color: 0xc8bca8 });
+          const tarpBlueMat = new THREE.MeshLambertMaterial({ color: 0x2c3e50 });
+          const tarpGrayMat = new THREE.MeshLambertMaterial({ color: 0x636e72 });
+          [[27, 13, 8, 3.4, 7, tarpGrayMat], [28, 5, 7, 2.8, 6, sackMat], [20, 4, 6, 2.2, 4.5, tarpBlueMat]].forEach(s => {
+            mkBox(g, s[2], s[3], s[4], s[5], s[0], s[3] / 2, s[1], true, true);
+          });
+          for (let sx = 24; sx <= 32; sx += 2.2) {
+            mkBox(g, 1.4, 1.3, 1.1, sx % 4 === 0 ? sackLightMat : sackMat, sx, 0.65, 18.5, true);
+            mkBox(g, 1.3, 1.1, 1.0, sackMat, sx, 1.85, 18.5, true);
+          }
+
+          const umbrellaMats = [
+            mkTex(128, 128, ctx => { const cols = ['#e74c3c','#ffffff','#f1c40f','#2ecc71','#3498db','#ffffff']; for (let i = 0; i < 6; i++) { ctx.fillStyle = cols[i]; ctx.fillRect(i * 22, 0, 22, 128); } }),
+            mkTex(128, 128, ctx => { const cols = ['#0984e3','#feca57','#0984e3','#feca57','#0984e3','#feca57']; for (let i = 0; i < 6; i++) { ctx.fillStyle = cols[i]; ctx.fillRect(i * 22, 0, 22, 128); } }),
+            mkTex(128, 128, ctx => { const cols = ['#ff4757','#ffffff','#ff4757','#ffffff','#ff4757','#ffffff']; for (let i = 0; i < 6; i++) { ctx.fillStyle = cols[i]; ctx.fillRect(i * 22, 0, 22, 128); } }),
+            mkTex(128, 128, ctx => { const cols = ['#10ac84','#f39c12','#ee5253','#5f27cd','#0abde3','#ff9f43']; for (let i = 0; i < 6; i++) { ctx.fillStyle = cols[i]; ctx.fillRect(i * 22, 0, 22, 128); } })
+          ].map(t => new THREE.MeshLambertMaterial({ map: t, side: THREE.DoubleSide }));
+          const umbPoleMat = new THREE.MeshLambertMaterial({ color: 0xbdc3c7 });
+
+          function addUmbrella(ux, uz, matIdx, tiltX = 0.08, tiltZ = 0.06, scale = 1) {
+            const ug = new THREE.Group();
+            const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.06, 3.1, 8), umbPoleMat);
+            pole.position.y = 1.55; pole.castShadow = true; ug.add(pole);
+            const top = new THREE.Mesh(new THREE.ConeGeometry(2.3 * scale, 0.95, 8, 1, true), umbrellaMats[matIdx % umbrellaMats.length]);
+            top.position.y = 2.95; top.castShadow = true; ug.add(top);
+            ug.position.set(ux, 0, uz); ug.rotation.set(tiltX, ux, tiltZ); g.add(ug);
+          }
+
+          const matColors = [0x1e3799, 0xb71540, 0x3c6382, 0xe58e26, 0x079992, 0x60a3bc];
+          const prodMats = {
+            pepper: new THREE.MeshLambertMaterial({ color: 0x1e8449 }),
+            tomato: new THREE.MeshLambertMaterial({ color: 0xc0392b }),
+            sweetPotato: new THREE.MeshLambertMaterial({ color: 0x8e44ad }),
+            pineapple: new THREE.MeshLambertMaterial({ color: 0xd4ac0d }),
+            orange: new THREE.MeshLambertMaterial({ color: 0xe67e22 }),
+            bucket: new THREE.MeshLambertMaterial({ color: 0xecf0f1 })
+          };
+          const produceGeo = new THREE.SphereGeometry(0.16, 7, 6);
+          const bucketGeo = new THREE.CylinderGeometry(0.24, 0.19, 0.46, 10);
+
+          function addGroundStall(sx, sz, rotY, umbIdx, prodA, prodB) {
+            const sg = new THREE.Group();
+            mkBox(sg, 3.4, 0.05, 2.2, new THREE.MeshLambertMaterial({ color: matColors[umbIdx % matColors.length] }), 0, 0.04, 0, false, true);
+            [-0.95, -0.25, 0.45, 1.05].forEach((px, pi) => {
+              const pMat = pi % 2 === 0 ? prodMats[prodA] : prodMats[prodB];
+              for (let r = 0; r < 5; r++) {
+                const it = new THREE.Mesh(produceGeo, pMat);
+                it.position.set(px + ((r % 3) - 1) * 0.14, 0.18 + (r >= 3 ? 0.14 : 0), ((r % 2) - 0.5) * 0.25);
+                it.scale.set(1.1, 0.85, 1.1);
+                sg.add(it);
+              }
+            });
+            const bk = new THREE.Mesh(bucketGeo, prodMats.bucket);
+            bk.position.set(-1.55, 0.25, 0.75); bk.castShadow = true; sg.add(bk);
+            sg.position.set(sx, 0, sz); sg.rotation.y = rotY; g.add(sg);
+            addUmbrella(sx + 0.5, sz - 0.6, umbIdx, (umbIdx % 2 === 0 ? 0.1 : -0.08), 0.08, 0.95);
+          }
+
+          [
+            [-28, -14, 0.1, 0, 'pepper', 'tomato'],
+            [-18, -12, -0.15, 1, 'sweetPotato', 'orange'],
+            [-6, -15, 0.08, 2, 'pineapple', 'pepper'],
+            [7, -14, -0.1, 3, 'tomato', 'sweetPotato'],
+            [18, -12, 0.2, 0, 'orange', 'pineapple'],
+            [-26, -2, -0.12, 2, 'pepper', 'sweetPotato'],
+            [-12, 0, 0.14, 3, 'tomato', 'orange'],
+            [3, -1, -0.08, 1, 'pineapple', 'tomato'],
+            [15, 1, 0.15, 2, 'pepper', 'orange'],
+            [-22, 9, 0.05, 1, 'sweetPotato', 'pepper'],
+            [-5, 10, -0.12, 0, 'tomato', 'pineapple']
+          ].forEach(st => addGroundStall(...st));
+
+          [[27, -4, tarpGrayMat], [-33, 6, tarpBlueMat]].forEach(t => {
+            const tx = t[0], tz = t[1];
+            [-2.5, 2.5].forEach(ox => [-2, 2].forEach(oz => mkBox(g, 0.14, 2.8, 0.14, pWood, tx + ox, 1.4, tz + oz, true)));
+            const tarp = mkBox(g, 5.6, 0.12, 4.6, t[2], tx, 2.85, tz, true); tarp.rotation.x = 0.12;
+            mkBox(g, 2.8, 0.85, 1.2, pWood, tx, 0.42, tz, true);
+          });
+
+          g.position.set(MARKET_CX, 0, MARKET_CZ);
+          scene.add(g);
+
+          solidBoxes.push(
+            { minX: MARKET_CX - 30, maxX: MARKET_CX + 23, minZ: MARKET_CZ + 22.4, maxZ: MARKET_CZ + 23.6 },
+            { minX: MARKET_CX + 21.4, maxX: MARKET_CX + 22.6, minZ: MARKET_CZ + 7, maxZ: MARKET_CZ + 23.5 },
+            { minX: MARKET_CX - 2, maxX: MARKET_CX + 22, minZ: MARKET_CZ + 11.4, maxZ: MARKET_CZ + 12.6 },
+            { minX: MARKET_CX + 23, maxX: MARKET_CX + 32, minZ: MARKET_CZ + 2, maxZ: MARKET_CZ + 17.5 }
+          );
+        }
+        createCalembaInformalMarket();
+
         // PARAGENS
         function createCandongueiro3D(parentScene = true) {
           const g = new THREE.Group(), mB = new THREE.MeshPhongMaterial({ color: 0x5bc0eb, shininess: 60 }), mW = new THREE.MeshPhongMaterial({ color: 0xffffff, shininess: 50 }), mG = new THREE.MeshPhongMaterial({ color: 0x182026, shininess: 120 }), mK = new THREE.MeshLambertMaterial({ color: 0x1e2124 });
@@ -487,7 +621,7 @@
         createParagem(-232, 12.0, 'PARAGEM CALEMBA 2', 'Centro • Kilamba');
         createParagem(245, 12.0, 'PARAGEM KILAMBA', 'Centro • Calemba 2');
 
-        // VIATURA ÚNICA DA POLÍCIA NACIONAL (PICK-UP COM AGENTES FARDADOS NA TRASEIRA)
+        // VIATURA DA POLÍCIA NACIONAL
         function createPoliciaOfficerSeated(facingX) {
           const g = new THREE.Group(), mU = new THREE.MeshLambertMaterial({ color: 0x132038 }), mV = new THREE.MeshLambertMaterial({ color: 0x20314d }), mSk = new THREE.MeshPhongMaterial({ color: 0x9c5527 }), mH = new THREE.MeshLambertMaterial({ color: 0x0e1624 }), mP = new THREE.MeshBasicMaterial({ color: 0xf1f2f6 });
           mkBox(g, 0.42, 0.24, 0.44, mU, facingX * 0.14, 0.12, 0); mkBox(g, 0.38, 0.56, 0.44, mU, 0, 0.46, 0, true); mkBox(g, 0.42, 0.44, 0.47, mV, 0, 0.48, 0); mkBox(g, 0.04, 0.10, 0.12, mP, facingX * 0.21, 0.52, 0.12);
@@ -524,7 +658,7 @@
         }
 
         // PERSONAGENS
-        const cGeo = { leg: new THREE.CylinderGeometry(0.155, 0.12, 0.88, 12), legFem: new THREE.CylinderGeometry(0.135, 0.105, 0.88, 12), shoeBody: new THREE.BoxGeometry(0.25, 0.145, 0.43), shoeSole: new THREE.BoxGeometry(0.265, 0.05, 0.445), shoeToe: new THREE.BoxGeometry(0.22, 0.07, 0.14), shoeSwoosh: new THREE.BoxGeometry(0.02, 0.065, 0.22), shoeLaces: new THREE.BoxGeometry(0.14, 0.03, 0.18), pelvis: new THREE.CylinderGeometry(0.295, 0.31, 0.20, 14), belt: new THREE.CylinderGeometry(0.308, 0.308, 0.06, 14), torso: new THREE.CylinderGeometry(0.38, 0.28, 0.90, 16), torsoFem: new THREE.CylinderGeometry(0.295, 0.23, 0.86, 16), skirt: new THREE.CylinderGeometry(0.26, 0.36, 0.72, 16), placket: new THREE.BoxGeometry(0.11, 0.36, 0.03), btn: new THREE.CylinderGeometry(0.018, 0.018, 0.02, 8), collarHalf: new THREE.BoxGeometry(0.16, 0.10, 0.18), collarStripe: new THREE.BoxGeometry(0.165, 0.022, 0.185), neck: new THREE.CylinderGeometry(0.105, 0.125, 0.22, 12), sleeve: new THREE.CylinderGeometry(0.135, 0.14, 0.35, 12), sleeveFem: new THREE.CylinderGeometry(0.105, 0.115, 0.28, 12), cuffBand: new THREE.CylinderGeometry(0.144, 0.144, 0.04, 12), cuffLine: new THREE.CylinderGeometry(0.146, 0.146, 0.018, 12), forearm: new THREE.CylinderGeometry(0.105, 0.082, 0.48, 12), forearmFem: new THREE.CylinderGeometry(0.082, 0.068, 0.52, 12), bareArm: new THREE.CylinderGeometry(0.125, 0.085, 0.76, 12), hand: new THREE.SphereGeometry(0.095, 10, 10), handFem: new THREE.SphereGeometry(0.08, 10, 10), watchBand: new THREE.CylinderGeometry(0.096, 0.096, 0.065, 12), watchFace: new THREE.CylinderGeometry(0.065, 0.065, 0.03, 12), head: new THREE.SphereGeometry(0.275, 20, 18), jaw: new THREE.SphereGeometry(0.20, 14, 12), ear: new THREE.SphereGeometry(0.055, 8, 8), earring: new THREE.TorusGeometry(0.032, 0.008, 6, 10), eyeWhite: new THREE.SphereGeometry(0.042, 10, 10), eyeIris: new THREE.SphereGeometry(0.026, 8, 8), brow: new THREE.BoxGeometry(0.092, 0.025, 0.028), nose: new THREE.BoxGeometry(0.042, 0.07, 0.05), mouth: new THREE.BoxGeometry(0.085, 0.02, 0.02), hairCap: new THREE.SphereGeometry(0.285, 18, 14, 0, Math.PI * 2, 0, Math.PI * 0.54), hairPuff: new THREE.SphereGeometry(0.11, 10, 10), braid: new THREE.CylinderGeometry(0.032, 0.024, 0.56, 8), bun: new THREE.SphereGeometry(0.16, 12, 12), lencoCap: new THREE.SphereGeometry(0.295, 18, 14, 0, Math.PI * 2, 0, Math.PI * 0.56), lencoKnot: new THREE.SphereGeometry(0.11, 10, 10), bag: new THREE.BoxGeometry(0.12, 0.30, 0.34), lens: new THREE.BoxGeometry(0.105, 0.065, 0.03), bridge: new THREE.BoxGeometry(0.06, 0.02, 0.025), temple: new THREE.BoxGeometry(0.015, 0.02, 0.18), knifeHandle: new THREE.BoxGeometry(0.045, 0.14, 0.045), knifeGuard: new THREE.BoxGeometry(0.095, 0.025, 0.04), knifeBlade: new THREE.ConeGeometry(0.035, 0.27, 4) };
+        const cGeo = { leg: new THREE.CylinderGeometry(0.155, 0.12, 0.88, 12), legFem: new THREE.CylinderGeometry(0.135, 0.105, 0.88, 12), shoeBody: new THREE.BoxGeometry(0.25, 0.145, 0.43), shoeSole: new THREE.BoxGeometry(0.265, 0.05, 0.445), shoeToe: new THREE.BoxGeometry(0.22, 0.07, 0.14), shoeSwoosh: new THREE.BoxGeometry(0.02, 0.065, 0.22), shoeLaces: new THREE.BoxGeometry(0.14, 0.03, 0.18), pelvis: new THREE.CylinderGeometry(0.295, 0.31, 0.20, 14), belt: new THREE.CylinderGeometry(0.308, 0.308, 0.06, 14), torso: new THREE.CylinderGeometry(0.38, 0.28, 0.90, 16), torsoFem: new THREE.CylinderGeometry(0.295, 0.23, 0.86, 16), skirt: new THREE.CylinderGeometry(0.26, 0.36, 0.72, 16), placket: new THREE.BoxGeometry(0.11, 0.36, 0.03), btn: new THREE.CylinderGeometry(0.018, 0.018, 0.02, 8), collarHalf: new THREE.BoxGeometry(0.16, 0.10, 0.18), collarStripe: new THREE.BoxGeometry(0.165, 0.022, 0.185), neck: new THREE.CylinderGeometry(0.105, 0.125, 0.22, 12), sleeve: new THREE.CylinderGeometry(0.135, 0.14, 0.35, 12), sleeveFem: new THREE.CylinderGeometry(0.105, 0.115, 0.28, 12), cuffBand: new THREE.CylinderGeometry(0.144, 0.144, 0.04, 12), cuffLine: new THREE.CylinderGeometry(0.146, 0.146, 0.018, 12), forearm: new THREE.CylinderGeometry(0.105, 0.082, 0.48, 12), forearmFem: new THREE.CylinderGeometry(0.082, 0.068, 0.52, 12), bareArm: new THREE.CylinderGeometry(0.125, 0.085, 0.76, 12), hand: new THREE.SphereGeometry(0.095, 10, 10), handFem: new THREE.SphereGeometry(0.08, 10, 10), watchBand: new THREE.CylinderGeometry(0.096, 0.096, 0.065, 12), watchFace: new THREE.CylinderGeometry(0.065, 0.065, 0.03, 12), head: new THREE.SphereGeometry(0.275, 20, 18), jaw: new THREE.SphereGeometry(0.20, 14, 12), ear: new THREE.SphereGeometry(0.055, 8, 8), earring: new THREE.TorusGeometry(0.032, 0.008, 6, 10), eyeWhite: new THREE.SphereGeometry(0.042, 10, 10), eyeIris: new THREE.SphereGeometry(0.026, 8, 8), brow: new THREE.BoxGeometry(0.092, 0.025, 0.028), nose: new THREE.BoxGeometry(0.042, 0.07, 0.05), mouth: new THREE.BoxGeometry(0.085, 0.02, 0.02), hairCap: new THREE.SphereGeometry(0.285, 18, 14, 0, Math.PI * 2, 0, Math.PI * 0.54), hairPuff: new THREE.SphereGeometry(0.11, 10, 10), braid: new THREE.CylinderGeometry(0.032, 0.024, 0.56, 8), bun: new THREE.SphereGeometry(0.16, 12, 12), lencoCap: new THREE.SphereGeometry(0.295, 18, 14, 0, Math.PI * 2, 0, Math.PI * 0.56), lencoKnot: new THREE.SphereGeometry(0.11, 10, 10), bag: new THREE.BoxGeometry(0.12, 0.30, 0.34), lens: new THREE.BoxGeometry(0.105, 0.065, 0.03), bridge: new THREE.BoxGeometry(0.06, 0.02, 0.025), temple: new THREE.BoxGeometry(0.015, 0.02, 0.18), knifeHandle: new THREE.BoxGeometry(0.045, 0.14, 0.045), knifeGuard: new THREE.BoxGeometry(0.095, 0.025, 0.04), knifeBlade: new THREE.ConeGeometry(0.035, 0.27, 4), rodilha: new THREE.TorusGeometry(0.19, 0.055, 8, 14), basin: new THREE.CylinderGeometry(0.47, 0.30, 0.25, 16), basinRim: new THREE.TorusGeometry(0.465, 0.032, 8, 16), basinGood: new THREE.SphereGeometry(0.095, 8, 7) };
         const curlyTex = h => mkTex(128, 128, ctx => { ctx.fillStyle = h; ctx.fillRect(0, 0, 128, 128); for (let i = 0; i < 220; i++) { const cx = ((Math.sin(i * 19.3) * 43758.5) % 1 + 1) % 1 * 128, cy = ((Math.sin(i * 41.7) * 43758.5) % 1 + 1) % 1 * 128; ctx.fillStyle = i % 2 === 0 ? 'rgba(0,0,0,0.45)' : 'rgba(60,60,68,0.32)'; ctx.beginPath(); ctx.arc(cx, cy, 4 + (i % 4), 0, Math.PI * 2); ctx.fill(); } });
         const panoTex = b => mkTex(128, 128, ctx => { ctx.fillStyle = b; ctx.fillRect(0, 0, 128, 128); for (let y = 8; y < 128; y += 32) { ctx.fillStyle = '#feca57'; ctx.fillRect(0, y, 128, 5); for (let x = 8; x < 128; x += 24) { ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(x, y + 16, 6, 0, Math.PI * 2); ctx.fill(); ctx.fillStyle = '#1e272e'; ctx.beginPath(); ctx.arc(x, y + 16, 2.5, 0, Math.PI * 2); ctx.fill(); } } });
         const rippedTex = (b, s, p) => mkTex(128, 128, ctx => { ctx.fillStyle = b; ctx.fillRect(0, 0, 128, 128); ctx.fillStyle = 'rgba(20,15,10,0.35)'; for (let i = 0; i < 35; i++) ctx.fillRect((i * 37) % 120, (i * 53) % 120, 14, 9); ctx.fillStyle = s; if (!p) { ctx.fillRect(28, 0, 72, 26); ctx.beginPath(); ctx.moveTo(14, 34); ctx.lineTo(54, 48); ctx.lineTo(24, 62); ctx.closePath(); ctx.fill(); ctx.beginPath(); ctx.moveTo(74, 52); ctx.lineTo(116, 66); ctx.lineTo(88, 86); ctx.closePath(); ctx.fill(); ctx.fillRect(20, 96, 46, 32); } else { ctx.fillRect(10, 44, 42, 22); ctx.fillRect(72, 56, 44, 24); ctx.fillRect(18, 92, 36, 18); ctx.fillRect(78, 22, 30, 14); } });
@@ -555,10 +689,43 @@
           else if (hSt === 'braids') { const hc = new THREE.Mesh(cGeo.hairCap, mHr); hc.position.set(0, 2.345, -0.01); hc.scale.set(0.94, 1.06, 0.98); hc.rotation.x = -0.12; g.add(hc); [-0.20, -0.12, -0.04, 0.04, 0.12, 0.20].forEach((bx, bi) => { const br = new THREE.Mesh(cGeo.braid, mHr); br.position.set(bx, 2.08, -0.17 + (bi === 0 || bi === 5 ? 0.10 : 0)); br.rotation.x = 0.12; g.add(br); }); }
           else if (hSt === 'puff') { const hc = new THREE.Mesh(cGeo.hairCap, mHr); hc.position.set(0, 2.345, -0.01); hc.scale.set(0.94, 1.06, 0.98); hc.rotation.x = -0.12; const bn = new THREE.Mesh(cGeo.bun, mHr); bn.position.set(0, 2.60, -0.04); bn.scale.set(1.2, 1.05, 1.2); g.add(hc, bn); }
           else { const hc = new THREE.Mesh(cGeo.hairCap, mHr); hc.position.set(0, 2.345, -0.01); hc.scale.set(0.95, 1.08, 0.98); hc.rotation.x = -0.12; hc.castShadow = true; g.add(hc); [[0,2.55,0.04,1.4],[-0.12,2.53,0.01,1.1],[0.12,2.53,0.01,1.1],[0,2.52,-0.11,1.2],[0,2.51,0.14,1.0]].forEach(p => { const pf = new THREE.Mesh(cGeo.hairPuff, mHr); pf.position.set(p[0], p[1], p[2]); pf.scale.set(p[3], 0.85, p[3]); g.add(pf); }); }
+
+          if (opts.basinColor) {
+            const bgGroup = new THREE.Group();
+            const rodM = new THREE.MeshLambertMaterial({ map: panoTex('#e67e22') });
+            const rod = new THREE.Mesh(cGeo.rodilha, rodM); rod.rotation.x = Math.PI / 2; rod.position.y = 2.60;
+            const bMat = new THREE.MeshPhongMaterial({ color: opts.basinColor, shininess: 48 });
+            const bsn = new THREE.Mesh(cGeo.basin, bMat); bsn.position.y = 2.75; bsn.castShadow = true;
+            const rim = new THREE.Mesh(cGeo.basinRim, bMat); rim.rotation.x = Math.PI / 2; rim.position.y = 2.87;
+            bgGroup.add(rod, bsn, rim);
+            const gType = opts.basinGoods || 'fruit';
+            const gCols = gType === 'water' ? [0xdff9fb, 0x81ecec, 0xc7ecee] : (gType === 'veggies' ? [0x27ae60, 0xe74c3c, 0x8e44ad] : (gType === 'bread' ? [0xe67e22, 0xf39c12, 0xd35400] : [0xf1c40f, 0xe67e22, 0x2ecc71]));
+            const gMats = gCols.map(c => new THREE.MeshLambertMaterial({ color: c }));
+            [[-0.18, 2.84, 0.14], [0.16, 2.85, 0.16], [0, 2.88, 0], [-0.14, 2.84, -0.18], [0.18, 2.84, -0.14], [0.02, 2.91, 0.14], [-0.06, 2.91, -0.1]].forEach((gp, gi) => {
+              const gd = new THREE.Mesh(cGeo.basinGood, gMats[gi % gMats.length]);
+              gd.position.set(gp[0], gp[1], gp[2]); gd.scale.set(1.2, 0.9, 1.2); bgGroup.add(gd);
+            });
+            g.add(bgGroup);
+          }
+
           g.add(legL, legR, pel, tor, nk, armL, armR, hd, jw, ns, mt); g.userData = { legL, legR, armL, armR }; scene.add(g); return g;
         }
 
-        // Agentes colocados junto à unidade após a inicialização completa dos modelos de personagens.
+        // Quitandeiras sentadas em bancos baixos nas bancas do chão da praça
+        const stoolMat = new THREE.MeshLambertMaterial({ color: 0x784212 });
+        [
+          { x: MARKET_CX - 28, z: MARKET_CZ - 12.2, ry: Math.PI, shirt: 0xffffff, style: 'pano' },
+          { x: MARKET_CX - 12, z: MARKET_CZ + 1.8, ry: Math.PI, shirt: 0xfeca57, style: 'pano' },
+          { x: MARKET_CX + 7, z: MARKET_CZ - 12.2, ry: Math.PI, shirt: 0x2e86de, style: 'casual' },
+          { x: MARKET_CX + 15, z: MARKET_CZ + 2.8, ry: Math.PI, shirt: 0xe84393, style: 'pano' }
+        ].forEach(q => {
+          mkBox(scene, 0.55, 0.36, 0.45, stoolMat, q.x, 0.18, q.z, true);
+          const qm = createHuman(q.shirt, 0x9c5527, 0x151517, 0x2f3640, 0x1c2a44, { gender: 'female', style: q.style, hairStyle: 'lenco' });
+          qm.position.set(q.x, -0.45, q.z); qm.rotation.y = q.ry;
+          qm.userData.legL.rotation.x = -1.35; qm.userData.legR.rotation.x = -1.35;
+          qm.userData.armL.rotation.x = -0.55; qm.userData.armR.rotation.x = -0.55;
+        });
+
         const healthOfficers = [
           { x: 137, z: 115, angle: -0.45 },
           { x: 183, z: 115, angle: 0.45 },
@@ -602,7 +769,18 @@
         ];
         traffic.forEach(c => { c.mesh.rotation.y = c.angle; });
 
-        // ÚNICA VIATURA DA POLÍCIA NACIONAL (circula por toda a cidade)
+        const healthPoliceCars = [
+          { x: 160, z: 130, angle: Math.PI },
+          { x: 200, z: 95, angle: -Math.PI / 2 },
+          { x: 130, z: 95, angle: Math.PI / 2 }
+        ];
+        healthPoliceCars.forEach(p => {
+          const patrolCar = createPoliciaNacional3D();
+          patrolCar.position.set(p.x, 0, p.z);
+          patrolCar.rotation.y = p.angle;
+          patrolCar.scale.set(0.92, 0.92, 0.92);
+        });
+
         const policeRoute = [
           { x: 0, z: 0 }, { x: -195, z: 0 }, { x: -295, z: 0 }, { x: -295, z: -65 },
           { x: -195, z: -65 }, { x: -195, z: -130 }, { x: -295, z: -130 }, { x: -295, z: 65 },
@@ -624,15 +802,33 @@
           { name: 'Márcia', role: 'Passageira no Kilamba', rewarded: false, stationary: true, fixedAngle: Math.PI, mesh: createHuman(0x00d2d3, 0xc66f34, 0x151517, 0x00d2d3, 0x1c2a44, { gender: 'female', style: 'pano', hairStyle: 'lenco' }), x: 247.5, z: 11.4, vx: 0, vz: 0, cycle: 0, dialogue: { start: { text: 'Olá! Aqui na Paragem do Kilamba é bem seguro e organizado. Vais para o Centro?', options: [{ label: 'Adorei o teu pano e lenço!', next: 'style' }, { label: 'Estou só a passear.', next: 'walk' }] }, style: { text: 'Obrigada! Gosto muito de vestir roupas tradicionais com cor e alegria!', options: [{ label: 'Está linda!', next: 'start' }] }, walk: { text: 'Diverte-te! A Centralidade do Kilamba é ótima para caminhar pelos jardins.', options: [{ label: 'Obrigada!', next: 'start' }] } } },
           { name: 'Dona Esperança', role: 'Caixa do Arreiou', rewarded: false, stationary: true, fixedAngle: Math.PI, mesh: createHuman(0xf5b915, 0x9c5527, 0x151517, 0xf5b915, 0x1c2a44, { gender: 'female', style: 'pano', hairStyle: 'lenco' }), x: ARREIOU_CX - 7.5, z: ARREIOU_CZ + 7.4, vx: 0, vz: 0, cycle: 0, dialogue: { start: { text: 'Bem-vindo ao Supermercado Arreiou! Aqui tá barato! Precisas de compras ou queres ajudar na loja?', options: [{ label: 'Quero ajudar a organizar prateleiras (+25kz)', next: 'work' }, { label: 'O que tem na promoção hoje?', next: 'promo' }] }, work: { text: 'Muito obrigada pela ajuda, meu filho! Arrumaste tudo num instante. Toma 25kz pelo trabalho!', reward: 25, options: [{ label: 'Obrigado!', next: 'start' }] }, promo: { text: 'Pão quente a sair agora na padaria à direita, sumo gelado e cestas completas na caixa!', options: [{ label: 'Vou já ver!', next: 'start' }] } } },
           { name: 'Zé', role: 'Cliente no Arreiou', rewarded: false, indoorArreiou: true, mesh: createHuman(0x2e86de, 0xb86b35, 0x151517, 0x2e86de), x: ARREIOU_CX - 1.5, z: ARREIOU_CZ - 1.0, vx: 0.02, vz: 0.03, cycle: 0, dialogue: { start: { text: 'E aí! Vim buscar arroz, sumo e pão quente aqui no Arreiou. Os preços hoje tão ótimos!', options: [{ label: 'Onde ficam as bebidas?', next: 'drinks' }, { label: 'Bom passeio às compras!', next: 'bye' }] }, drinks: { text: 'Nos frigoríficos ali no fundo do corredor! Bem geladinhas.', options: [{ label: 'Valeu!', next: 'start' }] }, bye: { text: 'Igualmente! Se comeres Pão Quente ficas cheio de energia para correr!', options: [{ label: 'Boa dica!', next: 'start' }] } } },
-          { name: 'Tia Rosa', role: 'Vendedora em Calemba 2', rewarded: false, calembaBot: true, mesh: createHuman(0xe84393, 0x9c5527, 0x151517, 0xe84393, 0x1c2a44, { gender: 'female', style: 'pano', hairStyle: 'lenco' }), x: -244, z: -12, vx: 0.03, vz: 0.02, cycle: 0, dialogue: { start: { text: 'Cof, cof... Muita poeira hoje aqui em Calemba 2, sobrinho! Cuidado com os marginais de faca na cintura!', options: [{ label: 'O bairro precisa mesmo de segurança!', next: 'bairro' }, { label: 'Dar uma força na cantina (+15kz)', next: 'help' }] }, bairro: { text: 'Ainda bem que a pick-up da Polícia Nacional patrulha a cidade! Todo marginal visto na estrada é preso e levado!', options: [{ label: 'Vou ficar atento!', next: 'start' }] }, help: { text: 'Obrigada pela simpatia! Toma 15kz — e cuidado com os marginais!', reward: 15, options: [{ label: 'Obrigado!', next: 'start' }] } } },
+          { name: 'Tia Rosa', role: 'Vendedora em Calemba 2', rewarded: false, calembaBot: true, mesh: createHuman(0xe84393, 0x9c5527, 0x151517, 0xe84393, 0x1c2a44, { gender: 'female', style: 'pano', hairStyle: 'lenco' }), x: -244, z: -12, vx: 0.03, vz: 0.02, cycle: 0, dialogue: { start: { text: 'Cof, cof... Muita poeira hoje aqui em Calemba 2, sobrinho! Sabias que logo ali na rua de cima fica a Praça Informal?', options: [{ label: 'Onde fica a Praça de Calemba 2?', next: 'praca' }, { label: 'Dar uma força na cantina (+15kz)', next: 'help' }] }, praca: { text: 'É só atravessar a estrada de cima (Z=130)! Tem zungueiras com banheiras na cabeça, bancas no chão e guarda-sóis!', options: [{ label: 'Vou já lá!', next: 'start' }] }, help: { text: 'Obrigada pela simpatia! Toma 15kz — e cuidado com os marginais!', reward: 15, options: [{ label: 'Obrigado!', next: 'start' }] } } },
           { name: 'Kito', role: 'Morador de Calemba 2', rewarded: false, calembaBot: true, mesh: createHuman(0xf39c12, 0xc66f34, 0x151517, 0xf39c12), x: -290, z: 14, vx: -0.03, vz: 0.03, cycle: 0, dialogue: { start: { text: 'E aí, mano! Cuidado nos becos de Calemba 2, anda aí pessoal de roupa rasgada e óculos pretos a assaltar!', options: [{ label: 'Como me salvo deles?', next: 'luanda' }, { label: 'Há Candongueiro por aqui?', next: 'taxi' }] }, luanda: { text: 'Corre com Shift/⚡ ou leva o marginal até à estrada para a Polícia Nacional o prender e levar!', options: [{ label: 'Entendido!', next: 'start' }] }, taxi: { text: 'Sim! Vai ali na Paragem de Calemba 2 que o Puto Zéca está a lotar para o Centro!', options: [{ label: 'Vou apanhar!', next: 'start' }] } } },
-          { name: 'Mateus', role: 'Cliente do Arreiou', rewarded: false, mesh: createHuman(0xff4757, 0xb86b35, 0x151517, 0xff4757), x: -20, z: -11, vx: 0.04, vz: 0.02, cycle: 0, dialogue: { start: { text: 'E aí, mano! Atravessa a rua que tens a Paragem do Centro com os lotadores a chamar para Calemba 2 e Kilamba!', options: [{ label: 'O que tem de bom no Arreiou?', next: 'arreiou' }, { label: 'Onde fica Calemba 2 e Kilamba?', next: 'kilamba' }, { label: 'Dar um cumprimento amigável', next: 'gift' }] }, arreiou: { text: 'Entra lá dentro! Tem padaria, prateleiras cheias, frigoríficos e a Dona Esperança na caixa.', options: [{ label: 'Vou entrar já!', next: 'start' }] }, kilamba: { text: 'A Centralidade do Kilamba fica para Leste e Calemba 2 para Oeste — cuidado com os marginais em Calemba 2!', options: [{ label: 'Vou explorar!', next: 'start' }] }, gift: { text: 'Gosto dessa boa energia! Toma aqui 15kz para gastares no Arreiou ou na Paragem.', reward: 15, options: [{ label: 'Obrigado!', next: 'start' }] } } },
-          { name: 'Kiara', role: 'Moradora', rewarded: false, mesh: createHuman(0x5f27cd, 0xc66f34, 0x151517, 0x5f27cd, 0x1c2a44, { gender: 'female', style: 'casual', hairStyle: 'braids', hasBag: true }), x: -12, z: 14, vx: -0.04, vz: 0.04, cycle: 0, dialogue: { start: { text: 'Olá! Que bom ver movimento por NeoCity. Já viste a patrulha da Polícia Nacional e as paragens?', options: [{ label: 'Como construo edifícios?', next: 'build' }, { label: 'Como ganho dinheiro?', next: 'money' }] }, build: { text: 'Procura os terrenos azuis brilhantes no chão! Tudo o que construíres fica guardado na tua conta.', options: [{ label: 'Boa dica!', next: 'start' }] }, money: { text: 'Conversa com o pessoal e ajuda a Dona Esperança dentro do Arreiou para ganhar kz!', options: [{ label: 'Voltar', next: 'start' }] } } },
-          { name: 'Tio Pedro', role: 'Motorista de Folga', rewarded: false, mesh: createHuman(0xffa502, 0xd48b57, 0x4b4e53, 0xffa502), x: 14, z: 22, vx: 0.03, vz: -0.04, cycle: 0, dialogue: { start: { text: 'Boas, sobrinho! Podes conduzir um Candongueiro ou ir até à paragem falar com os lotadores!', options: [{ label: 'Como conduzo o Candongueiro?', next: 'drive' }, { label: 'Onde fica o Kilamba?', next: 'kilamba' }] }, drive: { text: 'Encosta num e prime F (ou toca no ícone do carro / △ no comando). Com Shift ou R1 ativas o nitro!', options: [{ label: 'Vou testar!', next: 'start' }] }, kilamba: { text: 'A Centralidade do Kilamba é logo depois da ponte grande na avenida Leste! E para Oeste vais direto a Calemba 2.', options: [{ label: 'Voltar', next: 'start' }] } } },
+          { name: 'Mateus', role: 'Cliente do Arreiou', rewarded: false, mesh: createHuman(0xff4757, 0xb86b35, 0x151517, 0xff4757), x: -20, z: -11, vx: 0.04, vz: 0.02, cycle: 0, dialogue: { start: { text: 'E aí, mano! Atravessa a rua que tens a Paragem do Centro com os lotadores a chamar para Calemba 2 e Kilamba!', options: [{ label: 'O que tem de bom no Arreiou?', next: 'arreiou' }, { label: 'Onde fica Calemba 2 e Kilamba?', next: 'kilamba' }, { label: 'Dar um cumprimento amigável', next: 'gift' }] }, arreiou: { text: 'Entra lá dentro! Tem padaria, prateleiras cheias, frigoríficos e a Dona Esperança na caixa.', options: [{ label: 'Vou entrar já!', next: 'start' }] }, kilamba: { text: 'A Centralidade do Kilamba fica para Leste e Calemba 2 para Oeste — ao lado de Calemba 2 tem a Praça Informal!', options: [{ label: 'Vou explorar!', next: 'start' }] }, gift: { text: 'Gosto dessa boa energia! Toma aqui 15kz para gastares no Arreiou ou na Praça.', reward: 15, options: [{ label: 'Obrigado!', next: 'start' }] } } },
+          { name: 'Kiara', role: 'Moradora', rewarded: false, mesh: createHuman(0x5f27cd, 0xc66f34, 0x151517, 0x5f27cd, 0x1c2a44, { gender: 'female', style: 'casual', hairStyle: 'braids', hasBag: true }), x: -12, z: 14, vx: -0.04, vz: 0.04, cycle: 0, dialogue: { start: { text: 'Olá! Que bom ver movimento por NeoCity. Já viste a patrulha da Polícia Nacional e as paragens?', options: [{ label: 'Como construo edifícios?', next: 'build' }, { label: 'Como ganho dinheiro?', next: 'money' }] }, build: { text: 'Procura os terrenos azuis brilhantes no chão! Tudo o que construíres fica guardado na tua conta.', options: [{ label: 'Boa dica!', next: 'start' }] }, money: { text: 'Conversa com o pessoal e ajuda a Dona Esperança dentro do Arreiou ou a Vó Isabel na Praça de Calemba 2!', options: [{ label: 'Voltar', next: 'start' }] } } },
+          { name: 'Tio Pedro', role: 'Motorista de Folga', rewarded: false, mesh: createHuman(0xffa502, 0xd48b57, 0x4b4e53, 0xffa502), x: 14, z: 22, vx: 0.03, vz: -0.04, cycle: 0, dialogue: { start: { text: 'Boas, sobrinho! Podes conduzir um Candongueiro ou ir até à paragem falar com os lotadores!', options: [{ label: 'Como conduzo o Candongueiro?', next: 'drive' }, { label: 'Onde fica o Kilamba?', next: 'kilamba' }] }, drive: { text: 'Encosta num e prime F (ou toca no ícone do carro / △ no comando). Com Shift ou R1 ativas o nitro!', options: [{ label: 'Vou testar!', next: 'start' }] }, kilamba: { text: 'A Centralidade do Kilamba é logo depois da ponte grande na avenida Leste! E para Oeste vais direto a Calemba 2 e à Praça.', options: [{ label: 'Voltar', next: 'start' }] } } },
           { name: 'Dona Júlia', role: 'Moradora do Kilamba', rewarded: false, mesh: createHuman(0xeab543, 0x9c5527, 0x151517, 0xeab543, 0x1c2a44, { gender: 'female', style: 'pano', hairStyle: 'puff' }), x: 245, z: 28, vx: 0.02, vz: 0.03, cycle: 0, dialogue: { start: { text: 'Bem-vindo à Centralidade do Kilamba! Adoro estes jardins com flores entre os prédios!', options: [{ label: 'Os prédios são lindos!', next: 'predios' }, { label: 'Mora aqui muita gente?', next: 'gente' }] }, predios: { text: 'Verdade! As varandas amarelas e os telhados dão muita vida à centralidade. Toma 10kz pelo carinho!', reward: 10, options: [{ label: 'Obrigado!', next: 'start' }] }, gente: { text: 'Sim! Esta cidade cresce cada vez mais — preparada para milhares de moradores e jogadores!', options: [{ label: 'Voltar', next: 'start' }] } } },
-          { name: 'Beto', role: 'Jovem do Kilamba', rewarded: false, mesh: createHuman(0x2e86de, 0xc66f34, 0x151517, 0x2e86de), x: 245, z: -26, vx: -0.03, vz: 0.03, cycle: 0, dialogue: { start: { text: 'Saudações da Centralidade do Kilamba! Estás a curtir o passeio por Luanda?', options: [{ label: 'Sim, a cidade é gigante!', next: 'gigante' }, { label: 'Há Candongueiros aqui?', next: 'carro' }] }, gigante: { text: 'É mesmo! A diferença entre o Kilamba e a poeira de Calemba 2 dá para sentir logo!', options: [{ label: 'Voltar', next: 'start' }] }, carro: { text: 'Claro! Temos uma paragem com lotador e Candongueiro na avenida central do Kilamba.', options: [{ label: 'Fixe!', next: 'start' }] } } },
-          { name: 'Nádia', role: 'Arquiteta', rewarded: false, mesh: createHuman(0x1dd1a1, 0xd48b57, 0x2d1e17, 0x1dd1a1, 0x1c2a44, { gender: 'female', style: 'casual', hairStyle: 'braids', hasBag: true }), x: 335, z: 30, vx: -0.03, vz: -0.02, cycle: 0, dialogue: { start: { text: 'Oi! Estou a vistoriar os blocos da Centralidade do Kilamba. O que achas da arquitetura?', options: [{ label: 'Está igualzinha a Luanda!', next: 'thanks' }, { label: 'Onde posso construir mais?', next: 'types' }] }, thanks: { text: 'Obrigada! Toma 10kz pelo apoio à arquitetura local!', reward: 10, options: [{ label: 'Valeu!', next: 'start' }] }, types: { text: 'Há terrenos azuis disponíveis no Centro, na Centralidade do Kilamba e também em Calemba 2!', options: [{ label: 'Entendido!', next: 'start' }] } } }
+          { name: 'Beto', role: 'Jovem do Kilamba', rewarded: false, mesh: createHuman(0x2e86de, 0xc66f34, 0x151517, 0x2e86de), x: 245, z: -26, vx: -0.03, vz: 0.03, cycle: 0, dialogue: { start: { text: 'Saudações da Centralidade do Kilamba! Estás a curtir o passeio por Luanda?', options: [{ label: 'Sim, a cidade é gigante!', next: 'gigante' }, { label: 'Há Candongueiros aqui?', next: 'carro' }] }, gigante: { text: 'É mesmo! A diferença entre o Kilamba, Calemba 2 e a Praça Informal dá para sentir logo!', options: [{ label: 'Voltar', next: 'start' }] }, carro: { text: 'Claro! Temos uma paragem com lotador e Candongueiro na avenida central do Kilamba.', options: [{ label: 'Fixe!', next: 'start' }] } } },
+          { name: 'Nádia', role: 'Arquiteta', rewarded: false, mesh: createHuman(0x1dd1a1, 0xd48b57, 0x2d1e17, 0x1dd1a1, 0x1c2a44, { gender: 'female', style: 'casual', hairStyle: 'braids', hasBag: true }), x: 335, z: 30, vx: -0.03, vz: -0.02, cycle: 0, dialogue: { start: { text: 'Oi! Estou a vistoriar os blocos da Centralidade do Kilamba. O que achas da arquitetura?', options: [{ label: 'Está igualzinha a Luanda!', next: 'thanks' }, { label: 'Onde posso construir mais?', next: 'types' }] }, thanks: { text: 'Obrigada! Toma 10kz pelo apoio à arquitetura local!', reward: 10, options: [{ label: 'Valeu!', next: 'start' }] }, types: { text: 'Há terrenos azuis disponíveis no Centro, na Centralidade do Kilamba e também em Calemba 2!', options: [{ label: 'Entendido!', next: 'start' }] } } },
+
+          // ZUNGUEIRAS E QUITANDEIRAS INTERATIVAS DA PRAÇA INFORMAL DE CALEMBA 2
+          { name: 'Mama Domingas', role: 'Zungueira — Água & Fruta', rewarded: false, marketZungueira: true, steadyHand: true, shoutLines: ['💧 Água fresca, água geladinha!', '🍍 Ananás e manga na banheira!'], mesh: createHuman(0xdff9fb, 0x9c5527, 0x151517, 0x2ecc71, 0x1e3799, { gender: 'female', style: 'casual', hairStyle: 'lenco', hasBag: true, basinColor: 0x2ecc71, basinGoods: 'water' }), x: MARKET_CX - 2, z: MARKET_CZ - 8, vx: 0.04, vz: 0.02, cycle: 0, dialogue: { start: { text: 'Olá freguês! Água fresca bem geladinha e ananás docinho direto da banheira! Vai levar o quê?', options: [{ label: '💧 Comprar Água Fresca (5kz • +Super Salto)', next: 'buy_water' }, { label: '🍍 Comprar Ananás (15kz • +Velocidade)', next: 'buy_fruit' }, { label: 'Como é zungar aqui na praça?', next: 'vida' }] }, buy_water: { text: 'Boa escolha! Toma lá a tua água bem fresquinha!', buy: { cost: 5, msg: '💧 Bebeste Água Fresca da banheira! +Super Salto por 20s!', jumpMs: 20000 }, options: [{ label: 'Obrigado, Mama!', next: 'start' }] }, buy_fruit: { text: 'Tá docinho que nem mel! Aproveita!', buy: { cost: 15, msg: '🍍 Comeste Ananás fresco! +Velocidade por 20s!', speedMs: 20000 }, options: [{ label: 'Obrigado!', next: 'start' }] }, vida: { text: 'A gente acorda cedo, enche a banheira, põe a rodilha na cabeça e sai na zunga pela praça e por Calemba 2!', options: [{ label: 'Muita força, Mama!', next: 'start' }] } } },
+          { name: 'Tia Conceição', role: 'Zungueira — Banana & Pão', rewarded: false, marketZungueira: true, steadyHand: false, shoutLines: ['🍌 Banana madura, banana pão!', '🥖 Pão quentinho na banheira!'], mesh: createHuman(0x2980b9, 0x8d5524, 0x151517, 0xe67e22, 0x2c3e50, { gender: 'female', style: 'pano', hairStyle: 'lenco', hasBag: true, basinColor: 0xe67e22, basinGoods: 'bread' }), x: MARKET_CX - 16, z: MARKET_CZ - 5, vx: -0.03, vz: 0.035, cycle: 0, dialogue: { start: { text: 'Freguês! Banana madura e pão fresco! Olha que tá barato aqui na Praça de Calemba 2!', options: [{ label: '🍌 Comprar Banana & Pão (10kz • +Velocidade)', next: 'buy_banana' }, { label: 'Não cai essa banheira da cabeça?', next: 'equilibrio' }] }, buy_banana: { text: 'Serve-te, meu filho! Tá fresquinho!', buy: { cost: 10, msg: '🍌 Compraste Banana & Pão! +Velocidade por 18s!', speedMs: 18000 }, options: [{ label: 'Valeu, Tia!', next: 'start' }] }, equilibrio: { text: 'Haha! Já são muitos anos de prática na praça, nem preciso pôr a mão na bacia!', options: [{ label: 'Espetáculo!', next: 'start' }] } } },
+          { name: 'Mana Teresa', role: 'Zungueira — Legumes', rewarded: false, marketZungueira: true, steadyHand: true, shoutLines: ['🍅 Tomate, cebola e pimento!', '🥬 Legume fresquinho, vem escolher!'], mesh: createHuman(0x5f27cd, 0xa5694f, 0x151517, 0x0984e3, 0x1c2a44, { gender: 'female', style: 'pano', hairStyle: 'lenco', basinColor: 0x0984e3, basinGoods: 'veggies' }), x: MARKET_CX + 12, z: MARKET_CZ - 7, vx: -0.035, vz: -0.025, cycle: 0, dialogue: { start: { text: 'Chega mais perto! Tem tomate vermelho, pimento verde e batata-doce na minha banheira!', options: [{ label: '🍅 Comprar Saco de Legumes (10kz)', next: 'buy_veg' }, { label: 'Onde ficam as bancas de carvão?', next: 'carvao' }] }, buy_veg: { text: 'Leva lá! Legume de primeira!', buy: { cost: 10, msg: '🍅 Compraste legumes fresquinhos na Praça de Calemba 2!' }, options: [{ label: 'Obrigado!', next: 'start' }] }, carvao: { text: 'Ali do lado direito perto do muro do galpão, junto às lonas e aos sacos empilhados!', options: [{ label: 'Obrigada!', next: 'start' }] } } },
+          { name: 'Vó Isabel', role: 'Quitandeira — Banca do Galpão', rewarded: false, stationary: true, fixedAngle: Math.PI, mesh: createHuman(0xe84393, 0x9c5527, 0x4b4e53, 0xfeca57, 0x1c2a44, { gender: 'female', style: 'pano', hairStyle: 'lenco' }), x: MARKET_CX + 14, z: MARKET_CZ + 6, vx: 0, vz: 0, cycle: 0, dialogue: { start: { text: 'Bem-vindo à nossa praça informal, meu neto! Queres ganhar uns trocos a ajudar a descarregar os sacos ali no galpão?', options: [{ label: '💪 Ajudar com os sacos (+20kz)', next: 'work' }, { label: 'O que vendes aqui?', next: 'venda' }] }, work: { text: 'Deus te abençoe! Arrancaste os sacos num instante. Toma aqui 20kz pelo esforço!', reward: 20, options: [{ label: 'Obrigado, Vó!', next: 'start' }] }, venda: { text: 'Fuba, arroz, carvão e feijão — tudo em conta para o pessoal de Calemba 2!', options: [{ label: 'Fixe!', next: 'start' }] } } },
+          { name: 'Sónia', role: 'Quitandeira — Guarda-Sol', rewarded: false, stationary: true, fixedAngle: Math.PI, mesh: createHuman(0xff4757, 0xc66f34, 0x151517, 0xff4757, 0x1c2a44, { gender: 'female', style: 'casual', hairStyle: 'braids', hasBag: true }), x: MARKET_CX - 6, z: MARKET_CZ - 13, vx: 0, vz: 0, cycle: 0, dialogue: { start: { text: 'Pimento, ananás e batata-doce na lona! Aproveita o preço de praça!', options: [{ label: '🍍 Levar um ananás (10kz)', next: 'buy_p' }, { label: 'Está muito calor hoje!', next: 'sol' }] }, buy_p: { text: 'Prontinho, escolhi o mais doce!', buy: { cost: 10, msg: '🍍 Ananás doce da praça! +Velocidade por 15s!', speedMs: 15000 }, options: [{ label: 'Obrigado!', next: 'start' }] }, sol: { text: 'Ainda bem que montámos estes guarda-sóis coloridos! As zungueiras ali no meio é que andam de um lado para o outro com as banheiras!', options: [{ label: 'Verdade!', next: 'start' }] } } }
         ];
+
+        // Zungueiras extras andando vivamente pela praça e entrada de Calemba 2 com banheiras na cabeça
+        const ambientZungueiras = [
+          { x: MARKET_CX - 22, z: MARKET_CZ - 20, vx: 0.045, vz: 0.02, cycle: 0.4, steadyHand: true, shouts: ['🍊 Laranja doce, laranja!', '🥭 Manga madura!'], mesh: createHuman(0x10ac84, 0x9c5527, 0x151517, 0xff4757, 0x1c2a44, { gender: 'female', style: 'pano', hairStyle: 'lenco', basinColor: 0xff4757, basinGoods: 'fruit' }) },
+          { x: MARKET_CX + 4, z: MARKET_CZ - 21, vx: -0.04, vz: 0.025, cycle: 1.2, steadyHand: false, shouts: ['💧 Água fresca, água!', '🧊 Geladinho, geladinho!'], mesh: createHuman(0xf39c12, 0x8d5524, 0x151517, 0xf1c40f, 0x2c3e50, { gender: 'female', style: 'casual', hairStyle: 'lenco', hasBag: true, basinColor: 0x00d2d3, basinGoods: 'water' }) },
+          { x: MARKET_CX - 10, z: MARKET_CZ + 4, vx: 0.035, vz: -0.03, cycle: 2.1, steadyHand: true, shouts: ['🥬 Couve e repolho fresco!', '🫑 Pimento e tomate!'], mesh: createHuman(0xe84393, 0xb86b35, 0x151517, 0xf1c40f, 0x1c2a44, { gender: 'female', style: 'pano', hairStyle: 'lenco', basinColor: 0xf1c40f, basinGoods: 'veggies' }) },
+          { x: MARKET_CX + 18, z: MARKET_CZ - 16, vx: -0.03, vz: 0.04, cycle: 0.8, steadyHand: false, shouts: ['🍌 Banana madura, leva já!', '🍠 Batata-doce!'], mesh: createHuman(0x2e86de, 0xa5694f, 0x151517, 0x2ecc71, 0x1c2a44, { gender: 'female', style: 'casual', hairStyle: 'lenco', hasBag: true, basinColor: 0x2ecc71, basinGoods: 'fruit' }) },
+          { x: MARKET_CX - 30, z: MARKET_CZ + 14, vx: 0.04, vz: -0.025, cycle: 1.7, steadyHand: true, shouts: ['🥖 Pão quente, bolinhos!', '🥜 Ginguba torrada!'], mesh: createHuman(0xc0392b, 0x9c5527, 0x151517, 0x9b59b6, 0x1c2a44, { gender: 'female', style: 'pano', hairStyle: 'lenco', basinColor: 0x9b59b6, basinGoods: 'bread' }) },
+          { x: MARKET_CX + 2, z: MARKET_CZ + 15, vx: 0.03, vz: -0.035, cycle: 2.6, steadyHand: false, shouts: ['💧 Água fresca, quem quer?', '🍍 Abacaxi docinho!'], mesh: createHuman(0xffffff, 0x8d5524, 0x151517, 0xe67e22, 0x2f3640, { gender: 'female', style: 'casual', hairStyle: 'lenco', hasBag: true, basinColor: 0xe67e22, basinGoods: 'water' }) }
+        ];
+        ambientZungueiras.forEach(z => z.mesh.position.set(z.x, 0, z.z));
 
         const marginais = [
           { name: 'Marginal Zanga', x: -292, z: -5, vx: 0.04, vz: 0.03, cycle: 0, chasing: false, chaseElapsedMs: 0, cooldownUntil: 0, arrestState: 'free', prisonerUntil: 0, prisonerSlot: 0, respawnAt: 0, spawnX: -262, spawnZ: -76, mesh: createHuman(0x2d2a28, 0x8d5524, 0x151517, 0x555555, 0x1b222c, { isMarginal: true }) },
@@ -643,8 +839,12 @@
         ];
         marginais.forEach(m => m.mesh.position.set(m.x, 0, m.z));
 
-        const lotadorCallsEl = document.getElementById('lotador-calls'), lotadorCallElems = new Map();
-        bots.forEach((b, idx) => { if (b.isLotador) { const btn = document.createElement('button'); btn.className = 'lotador-shout'; btn.style.display = 'none'; btn.onclick = () => { if (hasJoined && !player.currentCar) openChat(b); }; lotadorCallsEl.appendChild(btn); lotadorCallElems.set(idx, btn); } });
+        const lotadorCallsEl = document.getElementById('lotador-calls'), lotadorCallElems = new Map(), zungaCallElems = new Map();
+        bots.forEach((b, idx) => {
+          if (b.isLotador) { const btn = document.createElement('button'); btn.className = 'lotador-shout'; btn.style.display = 'none'; btn.onclick = () => { if (hasJoined && !player.currentCar) openChat(b); }; lotadorCallsEl.appendChild(btn); lotadorCallElems.set(idx, btn); }
+          if (b.marketZungueira && b.shoutLines) { const dv = document.createElement('div'); dv.className = 'zunga-shout'; dv.style.display = 'none'; lotadorCallsEl.appendChild(dv); zungaCallElems.set(b, dv); }
+        });
+        ambientZungueiras.forEach(z => { const dv = document.createElement('div'); dv.className = 'zunga-shout'; dv.style.display = 'none'; lotadorCallsEl.appendChild(dv); zungaCallElems.set(z, dv); });
         const marginalCallElems = marginais.map(() => { const d = document.createElement('div'); d.className = 'marginal-shout'; d.style.display = 'none'; lotadorCallsEl.appendChild(d); return d; });
         const policeShoutEl = document.createElement('div'); policeShoutEl.className = 'police-shout'; policeShoutEl.style.display = 'none'; lotadorCallsEl.appendChild(policeShoutEl);
 
@@ -673,6 +873,7 @@
 
         function detectZone(px, pz) {
           if (px > ARREIOU_CX - 12.6 && px < ARREIOU_CX + 12.6 && pz > ARREIOU_CZ - 9.6 && pz < ARREIOU_CZ + 9.6) return 'Supermercado Arreiou';
+          if (px >= -292 && px <= -198 && pz >= 134 && pz <= 190) return 'Praça de Calemba 2';
           if (px >= 172 && Math.abs(pz) <= 135) return 'Centralidade do Kilamba';
           if (px <= -172 && px >= -372 && Math.abs(pz) <= 130) return 'Calemba 2';
           if (Math.abs(px) > 172 || Math.abs(pz) > 180) return 'Arredores';
@@ -744,7 +945,21 @@
           chatHistory.push({ from: 'player', text: opt.label });
           const nn = activeChatBot.dialogue[opt.next];
           if (nn) {
-            if (nn.ride) { const r = nn.ride; if (player.money < r.cost) { chatHistory.push({ from: 'npc', text: `Não tens ${r.cost}kz! Vai trabalhar no Arreiou ou fala com moradores para juntar.` }); currentOptions = [{ label: 'Voltar', next: 'start' }]; renderChatBubble(); return; } player.money -= r.cost; player.x = r.x; player.z = r.z; player.y = 0; player.vy = 0; player.mesh.position.set(player.x, player.y, player.z); window.closeChat(); savePlayerProgress(); showToast(`🚐 Viagem de Candongueiro concluída! Chegaste a ${r.zone}!`); return; }
+            if (nn.ride) { const r = nn.ride; if (player.money < r.cost) { chatHistory.push({ from: 'npc', text: `Não tens ${r.cost}kz! Vai trabalhar no Arreiou ou na Praça para juntar.` }); currentOptions = [{ label: 'Voltar', next: 'start' }]; renderChatBubble(); return; } player.money -= r.cost; player.x = r.x; player.z = r.z; player.y = 0; player.vy = 0; player.mesh.position.set(player.x, player.y, player.z); window.closeChat(); savePlayerProgress(); showToast(`🚐 Viagem de Candongueiro concluída! Chegaste a ${r.zone}!`); return; }
+            if (nn.buy) {
+              const b = nn.buy;
+              if (player.money < b.cost) {
+                chatHistory.push({ from: 'npc', text: `Não tens ${b.cost}kz agora, freguês! Vai ali ajudar a Vó Isabel ou a Dona Esperança!` });
+                currentOptions = [{ label: 'Voltar', next: 'start' }];
+                renderChatBubble();
+                return;
+              }
+              player.money -= b.cost;
+              if (b.speedMs) speedBuffUntil = Math.max(speedBuffUntil, Date.now()) + b.speedMs;
+              if (b.jumpMs) jumpBuffUntil = Math.max(jumpBuffUntil, Date.now()) + b.jumpMs;
+              savePlayerProgress();
+              showToast(b.msg);
+            }
             let rt = nn.text;
             if (nn.reward) { if (!activeChatBot.rewarded) { activeChatBot.rewarded = true; savedRewardedBots[activeChatBot.name] = true; player.money += nn.reward; savePlayerProgress(); showToast(`💬 ${activeChatBot.name} deu-te +${nn.reward}kz!`); } else rt = 'Já te dei uma força antes, amigo! Aproveita bem a cidade!'; }
             chatHistory.push({ from: 'npc', text: rt }); currentOptions = nn.options || [];
@@ -754,10 +969,11 @@
         function getSmartReply(bot, msg) {
           const m = msg.toLowerCase();
           if (/(ol[aá]|oi\b|boas|bom dia|boa tarde|boa noite|e a[ií])/.test(m)) return `Olá, ${myName || 'amigo'}! Tudo fixe por aí? Eu sou ${bot.name}.`;
+          if (/(pra[cç]a|mercado|zunga|banheira|bacia|quitand)/.test(m)) return 'A Praça Informal de Calemba 2 tá cheia de vida! Tem zungueiras com banheiras na cabeça, bancas no chão, guarda-sóis e o grande telheiro!';
           if (/(pol[ií]cia|viatura|prender|preso)/.test(m)) return 'A pick-up da Polícia Nacional patrulha toda a cidade! Todo marginal visto na estrada é preso e levado!';
           if (/(marginal|bandido|ladr[aã]o|faca|assalt)/.test(m)) return 'Nos arredores de Calemba 2 há marginais — mas se pisarem a estrada a Polícia Nacional prende-os!';
           if (/(paragem|lotador|subir|embarcar)/.test(m)) return 'As paragens têm candongueiros sempre prontos para Calemba 2, Centro e Centralidade do Kilamba por 20kz!';
-          if (/(calemba|poeira|agua|água|po[cç]a|lixo|vala)/.test(m)) return 'Calemba 2 tem muita poeira no ar, valas de água parada, poças nos becos e casas antigas de zinco!';
+          if (/(calemba|poeira|agua|água|po[cç]a|lixo|vala)/.test(m)) return 'Calemba 2 tem muita poeira no ar, valas de água parada, poças nos becos e a Praça Informal logo ao lado!';
           if (/(kilamba|centralidade|luanda)/.test(m)) return 'A Centralidade do Kilamba fica do lado Leste da cidade, com os prédios amarelos e creme e grandes jardins!';
           if (/(tudo bem|como est[aá]s|fixe|beleza)/.test(m)) return 'Tudo ótimo por aqui! E contigo?';
           if (/(arreiou|p[aã]o|loja|comprar|barato|supermercado)/.test(m)) return 'O Supermercado Arreiou tá aberto! Entra pelas portas de vidro para comprar pão quente, sumo e mantimentos!';
@@ -765,7 +981,7 @@
           if (/(dinheiro|kwanza|kz|construir|pr[eé]dio|terreno|parque)/.test(m)) return 'Nos quadrados azuis pelo mapa podes construir torres, shoppings e parques com os teus kz!';
           if (/(nome|quem [eé]s)/.test(m)) return `Chamo-me ${bot.name} (${bot.role}). Prazer em falar contigo!`;
           if (/(tchau|adeus|xau|at[eé])/.test(m)) return 'Até já! Bom passeio pela cidade!';
-          return ['Haha, tens razão! Esta cidade está cada vez mais vasta.', 'Interessante! Já viste a pick-up da Polícia Nacional a patrulhar hoje?', 'Boa conversa! Se precisares de algo, estou sempre por aqui.', 'É mesmo verdade! NeoCity, Calemba 2 e Centralidade do Kilamba nunca param.'][Math.floor(Math.random() * 4)];
+          return ['Haha, tens razão! Esta cidade está cada vez mais vasta.', 'Interessante! Já passaste pela Praça Informal ao lado de Calemba 2?', 'Boa conversa! Se precisares de algo, estou sempre por aqui.', 'É mesmo verdade! NeoCity, Calemba 2 e Centralidade do Kilamba nunca param.'][Math.floor(Math.random() * 4)];
         }
         window.sendCustomChat = () => { const inp = document.getElementById('chat-input'); if (!inp || !activeChatBot) return; const t = inp.value.trim(); if (!t) return; chatHistory.push({ from: 'player', text: t }); chatHistory.push({ from: 'npc', text: getSmartReply(activeChatBot, t) }); renderChatBubble(true); };
         function renderPromptBubble(bot) { const sk = `prompt:${bot.name}`; if (lastBubbleState === sk) return; lastBubbleState = sk; bubbleEl.innerHTML = `<button class="npc-prompt" onclick="openNearbyChat()">💬 <strong>${esc(bot.name)}</strong> <span>• Conversar <span class="k" style="font-size:10px;">E / ◻️</span></span></button>`; }
@@ -814,7 +1030,7 @@
           let activeGp = null; for (let i = 0; i < gps.length; i++) if (gps[i] && gps[i].connected) { activeGp = gps[i]; break; }
           if (!activeGp) return { gpFwd, gpTurn, gpNitro };
           if (!gamepadConnected) { gamepadConnected = true; document.getElementById('gp-ui').style.display = 'inline'; }
-          const dz = v => Math.abs(v) > 0.16 ? v : 0, btn = i => Boolean(activeGp.buttons[i] && (activeGp.buttons[i].pressed || activeGp.buttons[i].value > 0.5)), val = i => activeGp.buttons[i] ? activeGp.buttons[i].value : 0, jp = i => { const c = btn(i), w = Boolean(prevGpBtns[i]); prevGpBtns[i] = c; return c && !w; };
+const dz = v => Math.abs(v) > 0.16 ? v : 0, btn = i => Boolean(activeGp.buttons[i] && (activeGp.buttons[i].pressed || activeGp.buttons[i].value > 0.5)), val = i => activeGp.buttons[i] ? activeGp.buttons[i].value : 0, jp = i => { const c = btn(i), w = Boolean(prevGpBtns[i]); prevGpBtns[i] = c; return c && !w; };
           gpTurn = dz(activeGp.axes[0] || 0); gpFwd = -dz(activeGp.axes[1] || 0);
           if (btn(12)) gpFwd += 1; if (btn(13)) gpFwd -= 1; if (btn(14)) gpTurn -= 1; if (btn(15)) gpTurn += 1;
           gpFwd = Math.max(-1, Math.min(1, gpFwd)); gpTurn = Math.max(-1, Math.min(1, gpTurn));
@@ -914,6 +1130,7 @@
             lastZone = currentZone; document.getElementById('zone-ui').innerText = `📍 ${currentZone}`;
             if (hasJoined) {
               if (currentZone === 'Supermercado Arreiou') showToast('🛒 Bem-vindo ao Supermercado Arreiou! Tá Barato!');
+              else if (currentZone === 'Praça de Calemba 2') showToast('🧺 Praça Informal de Calemba 2 — Zungueiras & Comércio!');
               else if (currentZone === 'Centralidade do Kilamba') showToast('🏘️ Bem-vindo à Centralidade do Kilamba!');
               else if (currentZone === 'Calemba 2') showToast('🌫️ Calemba 2 — Cuidado com os Marginais!');
               else if (currentZone === 'Arredores') showToast('🌿 Área Livre para Expansão');
@@ -929,7 +1146,7 @@
 
           traffic.forEach(c => { c.x += c.vx; c.z += c.vz; if (c.z > 280) c.z = -280; if (c.z < -280) c.z = 280; if (c.x > 410) c.x = -410; if (c.x < -410) c.x = 410; c.mesh.position.set(c.x, 0, c.z); });
 
-          // PATRULHA DA POLÍCIA NACIONAL (1 carro em toda a cidade; prende e leva todo marginal visto na estrada)
+          // PATRULHA DA POLÍCIA NACIONAL
           {
             const redOn = Math.floor(nowPerf / (policePatrol.targetMarginal ? 130 : 280)) % 2 === 0;
             policePatrol.mesh.userData.redMat.color.setHex(redOn ? 0xff2222 : 0x450a0a);
@@ -962,15 +1179,55 @@
 
           bots.forEach(b => {
             const botY = (b.stationary || b.indoorArreiou) ? 0.16 : 0;
-            if (b === activeChatBot) { b.mesh.position.set(b.x, botY, b.z); b.mesh.rotation.y = Math.atan2(player.x - b.x, player.z - b.z); b.mesh.userData.legL.rotation.x = 0; b.mesh.userData.legR.rotation.x = 0; b.mesh.userData.armL.rotation.x = 0; b.mesh.userData.armR.rotation.x = 0; b.mesh.userData.armR.rotation.z = 0; return; }
-            if (b.stationary) { b.mesh.position.set(b.x, b.isLotador ? 0.12 : botY, b.z); b.mesh.rotation.y = b.fixedAngle || 0; if (b.isLotador) { b.mesh.userData.armR.rotation.x = -1.15 + Math.sin(nowPerf * 0.008 + b.x) * 0.35; b.mesh.userData.armR.rotation.z = 0.45; } return; }
-            if (Math.random() < 0.01) { b.vx = (Math.random() - 0.5) * 0.08; b.vz = (Math.random() - 0.5) * 0.08; }
+            if (b === activeChatBot) {
+              b.mesh.position.set(b.x, botY, b.z);
+              b.mesh.rotation.y = Math.atan2(player.x - b.x, player.z - b.z);
+              b.mesh.userData.legL.rotation.x = 0; b.mesh.userData.legR.rotation.x = 0; b.mesh.userData.armL.rotation.x = 0;
+              if (b.steadyHand) { b.mesh.userData.armR.rotation.x = -2.45; b.mesh.userData.armR.rotation.z = 0.22; }
+              else { b.mesh.userData.armR.rotation.x = 0; b.mesh.userData.armR.rotation.z = 0; }
+              return;
+            }
+            if (b.stationary) {
+              b.mesh.position.set(b.x, b.isLotador ? 0.12 : botY, b.z); b.mesh.rotation.y = b.fixedAngle || 0;
+              if (b.isLotador) { b.mesh.userData.armR.rotation.x = -1.15 + Math.sin(nowPerf * 0.008 + b.x) * 0.35; b.mesh.userData.armR.rotation.z = 0.45; }
+              return;
+            }
+            if (Math.random() < 0.012) { b.vx = (Math.random() - 0.5) * 0.08; b.vz = (Math.random() - 0.5) * 0.08; }
             let bx = b.x + b.vx, bz = b.z + b.vz;
             if (b.indoorArreiou) { bx = Math.max(ARREIOU_CX - 10, Math.min(ARREIOU_CX + 6, bx)); bz = Math.max(ARREIOU_CZ - 7, Math.min(ARREIOU_CZ + 4, bz)); }
+            else if (b.marketZungueira) {
+              if (bx < MARKET_CX - 34 || bx > MARKET_CX + 20) { b.vx *= -1; bx = Math.max(MARKET_CX - 34, Math.min(MARKET_CX + 20, bx)); }
+              if (bz < MARKET_CZ - 22 || bz > MARKET_CZ + 5) { b.vz *= -1; bz = Math.max(MARKET_CZ - 22, Math.min(MARKET_CZ + 5, bz)); }
+            }
             else if (b.calembaBot) { bx = Math.max(-340, Math.min(-210, bx)); bz = Math.max(-45, Math.min(45, bz)); }
             else { bx = Math.max(-220, Math.min(390, bx)); bz = Math.max(-220, Math.min(220, bz)); }
             const bS = applySolidCollisions(bx, bz, 0.55); b.x = bS.x; b.z = bS.z; b.mesh.position.set(b.x, botY, b.z); b.mesh.rotation.y = Math.atan2(b.vx, b.vz);
-            b.cycle += 0.14; const sw = Math.sin(b.cycle) * 0.55; b.mesh.userData.legL.rotation.x = sw; b.mesh.userData.legR.rotation.x = -sw; b.mesh.userData.armL.rotation.x = -sw; b.mesh.userData.armR.rotation.x = sw;
+            b.cycle += 0.14; const sw = Math.sin(b.cycle) * 0.55;
+            b.mesh.userData.legL.rotation.x = sw; b.mesh.userData.legR.rotation.x = -sw;
+            b.mesh.userData.armL.rotation.x = b.marketZungueira ? -sw * 0.45 : -sw;
+            if (b.steadyHand) { b.mesh.userData.armR.rotation.x = -2.45 + Math.sin(b.cycle) * 0.04; b.mesh.userData.armR.rotation.z = 0.22; }
+            else { b.mesh.userData.armR.rotation.x = b.marketZungueira ? sw * 0.45 : sw; b.mesh.userData.armR.rotation.z = 0; }
+          });
+
+          // Animação das zungueiras extras na Praça Informal de Calemba 2
+          ambientZungueiras.forEach(z => {
+            if (Math.random() < 0.015) {
+              const ang = Math.random() * Math.PI * 2, sp = 0.038 + Math.random() * 0.025;
+              z.vx = Math.sin(ang) * sp; z.vz = Math.cos(ang) * sp;
+            }
+            let zx = z.x + z.vx, zz = z.z + z.vz;
+            if (zx < MARKET_CX - 38 || zx > MARKET_CX + 22) { z.vx *= -1; zx = Math.max(MARKET_CX - 38, Math.min(MARKET_CX + 22, zx)); }
+            if (zz < MARKET_CZ - 23 || zz > MARKET_CZ + 16) { z.vz *= -1; zz = Math.max(MARKET_CZ - 23, Math.min(MARKET_CZ + 16, zz)); }
+            const zS = applySolidCollisions(zx, zz, 0.55);
+            z.x = zS.x; z.z = zS.z;
+            z.mesh.position.set(z.x, 0.03, z.z);
+            z.mesh.rotation.y = Math.atan2(z.vx, z.vz);
+            z.cycle += 0.14;
+            const sw = Math.sin(z.cycle) * 0.5;
+            z.mesh.userData.legL.rotation.x = sw; z.mesh.userData.legR.rotation.x = -sw;
+            z.mesh.userData.armL.rotation.x = -sw * 0.45;
+            if (z.steadyHand) { z.mesh.userData.armR.rotation.x = -2.45 + Math.sin(z.cycle) * 0.04; z.mesh.userData.armR.rotation.z = 0.22; }
+            else { z.mesh.userData.armR.rotation.x = sw * 0.45; z.mesh.userData.armR.rotation.z = 0; }
           });
 
           const playerInCalemba = player.x <= -172 && player.x >= -372 && Math.abs(player.z) <= 130;
@@ -1042,6 +1299,18 @@
             el.innerText = b.shoutLines[Math.floor(nowPerf / 2800 + idx) % b.shoutLines.length]; el.style.display = 'block';
           });
 
+          // Gritos das zungueiras na Praça Informal de Calemba 2
+          let zIdx = 0;
+          zungaCallElems.forEach((el, zObj) => {
+            const curIdx = zIdx++;
+            const dZ = Math.hypot(player.x - zObj.x, player.z - zObj.z);
+            const lines = zObj.shoutLines || zObj.shouts;
+            if (!hasJoined || dZ > 24 || zObj === activeChatBot || zObj === nearbyBot || !lines) { el.style.display = 'none'; return; }
+            projVec.set(zObj.x, 3.45, zObj.z); projVec.project(camera); if (projVec.z > 1) { el.style.display = 'none'; return; }
+            el.style.left = `${(projVec.x * 0.5 + 0.5) * window.innerWidth}px`; el.style.top = `${(-projVec.y * 0.5 + 0.5) * window.innerHeight}px`;
+            el.innerText = lines[Math.floor(nowPerf / 3000 + curIdx) % lines.length]; el.style.display = 'block';
+          });
+
           marginais.forEach((m, i) => {
             const el = marginalCallElems[i], dM = Math.hypot(player.x - m.x, player.z - m.z);
             if (!hasJoined || m.arrestState === 'jailed' || dM > 40 || (m.arrestState === 'free' && !m.chasing)) { el.style.display = 'none'; return; }
@@ -1070,7 +1339,7 @@
           const targetBot = activeChatBot || nearbyBot;
           if (targetBot) {
             if (!activeChatBot) renderPromptBubble(targetBot);
-            projVec.set(targetBot.x, 3.05, targetBot.z); projVec.project(camera);
+            projVec.set(targetBot.x, targetBot.marketZungueira ? 3.45 : 3.05, targetBot.z); projVec.project(camera);
             if (projVec.z > 1) bubbleEl.style.display = 'none';
             else {
               let sx = (projVec.x * 0.5 + 0.5) * window.innerWidth, sy = (-projVec.y * 0.5 + 0.5) * window.innerHeight;
