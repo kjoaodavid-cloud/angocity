@@ -69,6 +69,7 @@ html
     .zunga-shout { position: absolute; transform: translate(-50%,-100%); background: rgba(16,172,132,0.93); color: #fff; border: 1.5px solid #feca57; border-radius: 14px; padding: 4px 9px; font-size: 11px; font-weight: 800; white-space: nowrap; pointer-events: none; }
     .marginal-shout { position: absolute; transform: translate(-50%,-100%); background: rgba(220,38,38,0.95); color: #fff; border: 2px solid #feca57; border-radius: 16px; padding: 4px 10px; font-size: 11.5px; font-weight: 800; white-space: nowrap; pointer-events: none; }
     .police-shout { position: absolute; transform: translate(-50%,-100%); background: rgba(16,27,48,0.95); color: #fff; border: 2px solid #3b82f6; border-radius: 16px; padding: 4px 10px; font-size: 11.5px; font-weight: 800; white-space: nowrap; pointer-events: none; }
+    .moto-shout { position: absolute; transform: translate(-50%,-100%); background: rgba(192,57,43,0.96); color: #fff; border: 2px solid #feca57; border-radius: 16px; padding: 5px 11px; font-size: 12px; font-weight: 800; white-space: nowrap; pointer-events: none; box-shadow: 0 4px 12px rgba(0,0,0,0.45); }
     .remote-tag { position: absolute; transform: translate(-50%,-100%); background: rgba(9,13,22,0.88); color: #00d2d3; border: 1.5px solid #00d2d3; border-radius: 10px; padding: 2px 8px; font-size: 11px; font-weight: 800; white-space: nowrap; pointer-events: none; }
     #npc-bubble { position: fixed; left: 0; top: 0; transform: translate(-50%,-100%); z-index: 18; display: none; pointer-events: auto; }
     .npc-prompt { background: rgba(12,16,26,0.94); border: 1.5px solid #00d2d3; border-radius: 20px; padding: 7px 14px; font-size: 12px; color: #fff; cursor: pointer; white-space: nowrap; display: flex; align-items: center; gap: 6px; touch-action: manipulation; }
@@ -248,7 +249,7 @@ try {
   const kilambaRoofMat = mkLambert(0xc86d3b), kilambaBalconyMat = mkLambert(0xeab543), kilambaRailMat = mkLambert(0x3b2f2f);
 
   const ARREIOU_CX = -26, ARREIOU_CZ = -26, GRID_CELL = 32;
-  const solidBoxes = [], solidCircles = [], staticVehicles = [], boxGrid = new Map(), circleGrid = new Map();
+  const solidBoxes = [], solidCircles = [], staticVehicles = [], calembaMotos = [], boxGrid = new Map(), circleGrid = new Map();
   const gridKey = (cx, cz) => cx * 1000 + cz;
   function addBoxToGrid(b) {
     const x0 = Math.floor(b.minX / GRID_CELL), x1 = Math.floor(b.maxX / GRID_CELL), z0 = Math.floor(b.minZ / GRID_CELL), z1 = Math.floor(b.maxZ / GRID_CELL);
@@ -370,6 +371,13 @@ try {
           const tc = traffic[j];
           if (Math.abs(pos.x - tc.x) < maxRange && Math.abs(pos.z - tc.z) < maxRange) {
             const np = resolveCircleOBB(pos.x, pos.z, r, tc.x, tc.z, tc.cosA, tc.sinA, tc.hw || 1.15, tc.hl || 2.45);
+            if (np.hit) { pos = { x: np.x, z: np.z }; hit = true; }
+          }
+        }
+        for (let j = 0; j < calembaMotos.length; j++) {
+          const cm = calembaMotos[j];
+          if (Math.abs(pos.x - cm.x) < maxRange && Math.abs(pos.z - cm.z) < maxRange) {
+            const np = resolveCircleOBB(pos.x, pos.z, r, cm.x, cm.z, cm.cosA, cm.sinA, 0.72, 1.42);
             if (np.hit) { pos = { x: np.x, z: np.z }; hit = true; }
           }
         }
@@ -737,15 +745,81 @@ try {
     scene.add(g); return g;
   }
 
+  function createMotoCalemba3D(bodyColor = 0xb71540, shirtColor = 0xeccc68, skinColor = 0x8d5524) {
+    const g = new THREE.Group(), mBody = mkMat(bodyColor, { shininess: 75 }), mMetal = mkMat(0x7f8c8d, { shininess: 90 }), mDark = mkLambert(0x1e2124), mSeat = mkLambert(0x2d3436), mRim = mkLambert(0xbdc3c7);
+    const hlMat = new THREE.MeshBasicMaterial({ color: 0xfff5c0 }), tlMat = mkBasic(0xe74c3c), wheels = [];
+    const wSeg = isMobilePhone ? 7 : 12, tG = new THREE.CylinderGeometry(0.34, 0.34, 0.22, wSeg), rG = new THREE.CylinderGeometry(0.18, 0.18, 0.24, wSeg);
+    const mkWheel = (wx, wy, wz, sx = 1) => {
+      const wg = new THREE.Group(), t = new THREE.Mesh(tG, mDark), r = new THREE.Mesh(rG, mRim);
+      t.rotation.z = Math.PI / 2; r.rotation.z = Math.PI / 2; wg.add(t, r); wg.scale.set(sx, 1, 1); wg.position.set(wx, wy, wz); g.add(wg); wheels.push(wg);
+    };
+    mkWheel(0, 0.34, 1.05, 0.85); mkWheel(-0.66, 0.34, -0.82, 1); mkWheel(0.66, 0.34, -0.82, 1);
+    const forkL = mkBox(g, 0.08, 0.92, 0.08, mMetal, -0.14, 0.78, 0.88); forkL.rotation.x = 0.30;
+    const forkR = mkBox(g, 0.08, 0.92, 0.08, mMetal, 0.14, 0.78, 0.88); forkR.rotation.x = 0.30;
+    mkBox(g, 0.24, 0.10, 0.52, mBody, 0, 0.68, 1.04);
+    const hl = new THREE.Mesh(new THREE.CylinderGeometry(0.14, 0.14, 0.16, 8), hlMat); hl.rotation.x = Math.PI / 2; hl.position.set(0, 1.04, 0.98); g.add(hl);
+    mkBox(g, 0.86, 0.07, 0.07, mMetal, 0, 1.22, 0.68);
+    [-0.40, 0.40].forEach(gx => { mkBox(g, 0.16, 0.09, 0.09, mDark, gx, 1.22, 0.68); mkBox(g, 0.04, 0.16, 0.04, mMetal, gx * 0.82, 1.32, 0.68); mkBox(g, 0.12, 0.08, 0.04, mDark, gx * 0.82, 1.40, 0.68); });
+    mkBox(g, 0.42, 0.32, 0.56, mBody, 0, 0.94, 0.44, true);
+    mkBox(g, 0.34, 0.40, 0.46, mMetal, 0, 0.52, 0.40);
+    mkBox(g, 0.44, 0.18, 1.38, mDark, 0, 0.46, 0.15);
+    mkBox(g, 0.38, 0.18, 0.62, mSeat, 0, 0.78, 0.02);
+    mkBox(g, 0.38, 0.34, 0.12, mSeat, 0, 0.98, -0.26);
+    mkBox(g, 0.18, 0.24, 0.34, mBody, 0.42, 0.64, -0.14);
+    const bedTex = new THREE.MeshLambertMaterial({ map: cachedTex(`kawi_${bodyColor.toString(16)}`, 256, 96, ctx => { ctx.fillStyle = '#' + new THREE.Color(bodyColor).getHexString(); ctx.fillRect(0, 0, 256, 96); ctx.fillStyle = 'rgba(0,0,0,0.22)'; ctx.fillRect(0, 0, 256, 8); ctx.fillRect(0, 88, 256, 8); ctx.fillStyle = '#f5f6fa'; ctx.font = 'bold 26px Arial, sans-serif'; ctx.textAlign = 'center'; ctx.fillText('KAWISIKI', 128, 56); }) });
+    mkBox(g, 1.26, 0.10, 1.44, mDark, 0, 0.54, -0.84, true);
+    mkBox(g, 0.08, 0.42, 1.44, [bedTex, bedTex, mBody, mBody, mBody, mBody], -0.60, 0.76, -0.84, true);
+    mkBox(g, 0.08, 0.42, 1.44, [bedTex, bedTex, mBody, mBody, mBody, mBody], 0.60, 0.76, -0.84, true);
+    mkBox(g, 1.26, 0.42, 0.08, mBody, 0, 0.76, -1.52, true);
+    mkBox(g, 1.26, 0.42, 0.08, mBody, 0, 0.76, -0.16, true);
+    [-0.60, 0.60].forEach(rx => { mkBox(g, 0.06, 0.06, 1.42, mBody, rx, 1.12, -0.84); [-1.44, -0.84, -0.24].forEach(rz => mkBox(g, 0.06, 0.24, 0.06, mBody, rx, 1.00, rz)); });
+    [-0.46, 0.46].forEach(tx => mkBox(g, 0.16, 0.12, 0.06, tlMat, tx, 0.56, -1.56));
+    const bidonM1 = mkLambert(0xf5f6fa), bidonM2 = mkLambert(0xf1c40f), capM = mkLambert(0xc0392b);
+    [[-0.32, -0.52, bidonM1], [0.0, -0.52, bidonM2], [0.32, -0.52, bidonM1], [-0.32, -1.04, bidonM2], [0.0, -1.04, bidonM1], [0.32, -1.04, bidonM2]].forEach(b => {
+      mkBox(g, 0.28, 0.44, 0.40, b[2], b[0], 0.80, b[1], true);
+      mkBox(g, 0.09, 0.06, 0.09, capM, b[0], 1.05, b[1] + 0.08);
+    });
+    const bacia = new THREE.Mesh(new THREE.CylinderGeometry(0.36, 0.24, 0.18, 8), mkMat(0x2980b9, { shininess: 45 })); bacia.position.set(-0.08, 1.12, -0.64); g.add(bacia);
+    const driver = createHuman(shirtColor, skinColor, 0x151517, 0x2f3640, 0x1e272e, { gender: 'male' });
+    driver.scale.set(0.84, 0.84, 0.84); driver.position.set(0, -0.02, 0.02);
+    driver.userData.legL.rotation.set(-0.98, 0, -0.22); driver.userData.legR.rotation.set(-0.98, 0, 0.22);
+    driver.userData.armL.rotation.set(-1.05, 0, -0.10); driver.userData.armR.rotation.set(-1.05, 0, 0.10);
+    const capM2 = mkLambert(0x576574);
+    mkBox(driver, 0.36, 0.14, 0.36, capM2, 0, 2.52, 0.0); mkBox(driver, 0.32, 0.04, 0.24, capM2, 0, 2.49, 0.22);
+    g.add(driver);
+    g.userData = { wheels, hlMat }; scene.add(g); return g;
+  }
+
   const mkAvatarMesh = av => av.gender === 'female' ? createHuman(av.shirt || 0x00c8ff, av.skin || 0xc66f34, 0x151517, av.shirt || 0x00c8ff, 0x1c2a44, { gender: 'female', style: 'casual', hairStyle: 'braids', hasBag: true }) : createHuman(av.shirt || 0x00c8ff, av.skin || 0xc66f34, 0x151517, av.shirt || 0x00c8ff, 0x1c2a44);
   const player = { mesh: mkAvatarMesh(myAvatar), x: -12, y: 0, z: 10, vy: 0, walkCycle: 0, money: 200, currentCar: null };
   function rebuildPlayerAvatar() { const vis = player.mesh ? player.mesh.visible : true; scene.remove(player.mesh); player.mesh = mkAvatarMesh(myAvatar); player.mesh.position.set(player.x, player.y, player.z); player.mesh.visible = vis; }
   window.selectGender = g => { myAvatar.gender = g === 'female' ? 'female' : 'male'; localStorage.setItem('neocity_player_gender', myAvatar.gender); document.getElementById('btn-gender-male').classList.toggle('selected', myAvatar.gender === 'male'); document.getElementById('btn-gender-female').classList.toggle('selected', myAvatar.gender === 'female'); rebuildPlayerAvatar(); };
-  renderAvatarSwatches(); window.selectGender(myAvatar.gender);const drivableCars = [{ name: 'Carro Desportivo', mesh: createCar3D(0xff4757), x: 5, z: 14, angle: 0, speed: 0, hw: 1.15, hl: 2.3 }, { name: 'Candongueiro', mesh: createCandongueiro3D(), x: -16, z: -8, angle: Math.PI / 2, speed: 0, hw: 1.12, hl: 2.55 }, { name: 'Candongueiro', mesh: createCandongueiro3D(), x: 10, z: 26, angle: 0, speed: 0, hw: 1.12, hl: 2.55 }, { name: 'Candongueiro Kilamba', mesh: createCandongueiro3D(), x: 205, z: 12, angle: 0, speed: 0, hw: 1.12, hl: 2.55 }, { name: 'Carro Desportivo', mesh: createCar3D(0xfeca57), x: 294, z: -14, angle: Math.PI / 2, speed: 0, hw: 1.15, hl: 2.3 }, { name: 'Candongueiro Calemba 2', mesh: createCandongueiro3D(), x: -288, z: -12, angle: Math.PI, speed: 0, hw: 1.12, hl: 2.55 }];
+  renderAvatarSwatches(); window.selectGender(myAvatar.gender);
+
+  const drivableCars = [{ name: 'Carro Desportivo', mesh: createCar3D(0xff4757), x: 5, z: 14, angle: 0, speed: 0, hw: 1.15, hl: 2.3 }, { name: 'Candongueiro', mesh: createCandongueiro3D(), x: -16, z: -8, angle: Math.PI / 2, speed: 0, hw: 1.12, hl: 2.55 }, { name: 'Candongueiro', mesh: createCandongueiro3D(), x: 10, z: 26, angle: 0, speed: 0, hw: 1.12, hl: 2.55 }, { name: 'Candongueiro Kilamba', mesh: createCandongueiro3D(), x: 205, z: 12, angle: 0, speed: 0, hw: 1.12, hl: 2.55 }, { name: 'Carro Desportivo', mesh: createCar3D(0xfeca57), x: 294, z: -14, angle: Math.PI / 2, speed: 0, hw: 1.15, hl: 2.3 }, { name: 'Candongueiro Calemba 2', mesh: createCandongueiro3D(), x: -288, z: -12, angle: Math.PI, speed: 0, hw: 1.12, hl: 2.55 }];
   drivableCars.forEach(c => { c.cosA = Math.cos(c.angle); c.sinA = Math.sin(c.angle); c.mesh.position.set(c.x, 0, c.z); c.mesh.rotation.y = c.angle; });
   const traffic = [{ mesh: createCandongueiro3D(), x: -3.5, z: -180, vz: 0.45, vx: 0, angle: 0, hw: 1.12, hl: 2.55 }, { mesh: createCandongueiro3D(), x: 3.5, z: 190, vz: -0.44, vx: 0, angle: Math.PI, hw: 1.12, hl: 2.55 }, { mesh: createCandongueiro3D(), x: -240, z: 3.5, vz: 0, vx: 0.46, angle: Math.PI / 2, hw: 1.12, hl: 2.55 }, { mesh: createCandongueiro3D(), x: 280, z: -3.5, vz: 0, vx: -0.46, angle: -Math.PI / 2, hw: 1.12, hl: 2.55 }, { mesh: createCar3D(0xfeca57), x: 61.5, z: -120, vz: 0.48, vx: 0, angle: 0, hw: 1.15, hl: 2.3 }, { mesh: createCar3D(0xffffff), x: 196.5, z: -80, vz: 0.45, vx: 0, angle: 0, hw: 1.15, hl: 2.3 }, { create: false, mesh: createCandongueiro3D(), x: 293.5, z: 120, vz: -0.42, vx: 0, angle: Math.PI, hw: 1.12, hl: 2.55 }, { mesh: createCandongueiro3D(), x: -298.5, z: -115, vz: 0.44, vx: 0, angle: 0, hw: 1.12, hl: 2.55 }, { mesh: createCar3D(0xffffff), x: -291.5, z: 115, vz: -0.46, vx: 0, angle: Math.PI, hw: 1.15, hl: 2.3 }];
   traffic.forEach(c => { c.cosA = Math.cos(c.angle); c.sinA = Math.sin(c.angle); c.mesh.rotation.y = c.angle; });
   [{ x: 146, z: 120.2, angle: Math.PI / 2 }, { x: 176, z: 120.2, angle: -Math.PI / 2 }, { x: 190.8, z: 97, angle: 0 }].forEach(p => { const pc = createPoliciaNacional3D(); pc.position.set(p.x, 0, p.z); pc.rotation.y = p.angle; pc.scale.set(0.92, 0.92, 0.92); pushStaticVehicle(p.x, p.z, p.angle, 1.10, 2.65); });
+
+  [
+    { body: 0xb71540, shirt: 0xeccc68, skin: 0x8d5524, speed: 0.34, route: [{ x: -298, z: -68 }, { x: -298, z: 68 }, { x: -192, z: 68 }, { x: -192, z: -68 }], startWp: 1, x: -298, z: -20 },
+    { body: 0x0c56a8, shirt: 0xffffff, skin: 0xa5694f, speed: 0.36, route: [{ x: -298, z: -133 }, { x: -298, z: 133 }, { x: -192, z: 133 }, { x: -192, z: -133 }], startWp: 2, x: -245, z: 133 },
+    { body: 0x10ac84, shirt: 0xff6b81, skin: 0x9c5527, speed: 0.33, route: [{ x: -298, z: -133 }, { x: -298, z: 3.2 }, { x: -192, z: 3.2 }, { x: -192, z: -133 }], startWp: 2, x: -258, z: 3.2 },
+    { body: 0xd35400, shirt: 0x70a1ff, skin: 0x8d5524, speed: 0.35, route: [{ x: -356, z: 3.2 }, { x: -298, z: 3.2 }, { x: -298, z: 133 }, { x: -192, z: 133 }, { x: -192, z: -3.2 }, { x: -356, z: -3.2 }], startWp: 4, x: -192, z: 45 },
+   { body: 0x2f3640, shirt: 0xfeca57, skin: 0xb86b35, speed: 0.34, route: [{ x: -292, z: 68 }, { x: -292, z: -68 }, { x: -198, z: -68 }, { x: -198, z: 68 }], startWp: 1, x: -292, z: 20 }
+  ].forEach(cfg => {
+    const mesh = createMotoCalemba3D(cfg.body, cfg.shirt, cfg.skin);
+    const wp = cfg.route[cfg.startWp];
+    const ang = Math.atan2(wp.x - cfg.x, wp.z - cfg.z);
+    mesh.position.set(cfg.x, 0.14, cfg.z);
+    mesh.rotation.y = ang;
+    calembaMotos.push({
+      mesh, x: cfg.x, z: cfg.z, angle: ang, cosA: Math.cos(ang), sinA: Math.sin(ang),
+      speed: cfg.speed, route: cfg.route, routeIndex: cfg.startWp,
+      blocked: false, insultUntil: 0, lastPlayerToast: 0
+    });
+  });
 
   const policeRoute = [{ x: 0, z: 0 }, { x: -195, z: 0 }, { x: -295, z: 0 }, { x: -295, z: -65 }, { x: -195, z: -65 }, { x: -195, z: -130 }, { x: -295, z: -130 }, { x: -295, z: 65 }, { x: -195, z: 65 }, { x: -195, z: 130 }, { x: -295, z: 130 }, { x: -295, z: 0 }, { x: -65, z: 0 }, { x: -65, z: 130 }, { x: 65, z: 130 }, { x: 65, z: -130 }, { x: 0, z: -130 }, { x: 0, z: 0 }, { x: 200, z: 0 }, { x: 200, z: 130 }, { x: 290, z: 130 }, { x: 290, z: -130 }, { x: 380, z: -130 }, { x: 380, z: 0 }, { x: 200, z: 0 }];
   const policePatrol = { mesh: createPoliciaNacional3D(), x: -55, z: 0, angle: -Math.PI / 2, cosA: Math.cos(-Math.PI / 2), sinA: Math.sin(-Math.PI / 2), routeIndex: 1, targetMarginal: null };
@@ -806,6 +880,7 @@ try {
   ambientZungueiras.forEach(z => { const dv = document.createElement('div'); dv.className = 'zunga-shout'; dv.style.display = 'none'; lotadorCallsEl.appendChild(dv); zungaCallElems.set(z, dv); });
   const marginalCallElems = marginais.map(() => { const d = document.createElement('div'); d.className = 'marginal-shout'; d.style.display = 'none'; lotadorCallsEl.appendChild(d); return d; });
   const policeShoutEl = document.createElement('div'); policeShoutEl.className = 'police-shout'; policeShoutEl.style.display = 'none'; lotadorCallsEl.appendChild(policeShoutEl);
+  const motoCallElems = calembaMotos.map(() => { const d = document.createElement('div'); d.className = 'moto-shout'; d.style.display = 'none'; lotadorCallsEl.appendChild(d); return d; });
   const esquadraCallElems = bots.filter(b => b.isEsquadraGuard).map(b => {
     if (b.guardType === 'sentinela') {
       const gun = new THREE.Mesh(new THREE.BoxGeometry(0.10, 0.12, 0.95), mkLambert(0x111111));
@@ -1004,6 +1079,7 @@ try {
     if (/(esquadra|pol[ií]cia|viatura|prender|preso)/.test(m)) return 'A Esquadra da Polícia Nacional fica aqui no Kilamba com as viaturas no passeio e agentes em serviço!';
     if (/(pra[cç]a|mercado|zunga|banheira|bacia|quitand)/.test(m)) return 'A Praça Informal de Calemba 2 tá cheia de vida! Tem zungueiras com banheiras na cabeça, bancas no chão e guarda-sóis!';
     if (/(marginal|bandido|ladr[aã]o|faca|assalt)/.test(m)) return 'Nos arredores de Calemba 2 há marginais — mas se pisarem a estrada a Polícia Nacional prende-os!';
+    if (/(mota|kawisiki|kupapata|mototax)/.test(m)) return 'As motas de três rodas andam a carregar bidons pelas estradas de Calemba 2 — não fiques à frente delas senão levas xingamento!';
     if (/(paragem|lotador|subir|embarcar)/.test(m)) return 'As paragens têm candongueiros sempre prontos para Calemba 2, Centro e Kilamba por 20kz!';
     if (/(arreiou|p[aã]o|loja|comprar|barato|supermercado)/.test(m)) return 'O Supermercado Arreiou tá aberto! Entra pelas portas de vidro para comprar pão quente e sumo!';
     return ['Haha, tens razão! Esta cidade está cada vez mais vasta.', 'Já passaste pela Esquadra da Polícia Nacional?', 'Boa conversa! Se precisares de algo, estou por aqui.', 'NeoCity, Calemba 2 e Kilamba nunca param!'][Math.floor(Math.random() * 4)];
@@ -1271,6 +1347,7 @@ try {
       const lx = c.x + c.sinA * 3.8, lz = c.z + c.cosA * 3.8;
       let blocked = !player.currentCar && Math.hypot(player.x - lx, player.z - lz) < 2.2;
       if (!blocked) for (let j = 0; j < drivableCars.length; j++) if (Math.hypot(drivableCars[j].x - lx, drivableCars[j].z - lz) < 3.0) { blocked = true; break; }
+      if (!blocked) for (let j = 0; j < calembaMotos.length; j++) if (Math.hypot(calembaMotos[j].x - lx, calembaMotos[j].z - lz) < 2.6) { blocked = true; break; }
       if (!blocked) {
         c.x += c.vx * step60; c.z += c.vz * step60;
         if (c.z > 280) c.z = -280; if (c.z < -280) c.z = 280; if (c.x > 410) c.x = -410; if (c.x < -410) c.x = 410;
@@ -1292,6 +1369,7 @@ try {
       const isPolFrontBlocked = (nx, nz, sinA, cosA) => {
         const fx = nx + sinA * 3.4, fz = nz + cosA * 3.4;
         for (let j = 0; j < drivableCars.length; j++) if (Math.hypot(drivableCars[j].x - fx, drivableCars[j].z - fz) < 2.9) return true;
+        for (let j = 0; j < calembaMotos.length; j++) if (Math.hypot(calembaMotos[j].x - fx, calembaMotos[j].z - fz) < 2.6) return true;
         return false;
       };
       if (policePatrol.targetMarginal) {
@@ -1324,6 +1402,58 @@ try {
       policePatrol.mesh.position.set(policePatrol.x, 0, policePatrol.z);
       policePatrol.mesh.rotation.y = policePatrol.angle;
     }
+
+    calembaMotos.forEach((m, mi) => {
+      const vis = Math.abs(m.x - player.x) < cullDist && Math.abs(m.z - player.z) < cullDist;
+      if (m.mesh.visible !== vis) m.mesh.visible = vis;
+      const wp = m.route[m.routeIndex], dx = wp.x - m.x, dz = wp.z - m.z, dist = Math.hypot(dx, dz);
+      if (dist < 1.1) {
+        m.routeIndex = (m.routeIndex + 1) % m.route.length;
+      } else {
+        const ang = Math.atan2(dx, dz);
+        m.angle = ang; m.cosA = Math.cos(ang); m.sinA = Math.sin(ang);
+      }
+      const isInFront = (ex, ez, maxF = 6.5, maxL = 1.85) => {
+        const rx = ex - m.x, rz = ez - m.z;
+        const fwdD = rx * m.sinA + rz * m.cosA;
+        if (fwdD <= 0.6 || fwdD >= maxF) return false;
+        return Math.abs(rx * m.cosA - rz * m.sinA) < maxL;
+      };
+      let hitPlayer = false, hitOther = false;
+      if (hasJoined && isInFront(player.x, player.z, player.currentCar ? 7.4 : 6.5, player.currentCar ? 2.1 : 1.85)) {
+        hitPlayer = true;
+      }
+      if (!hitPlayer) {
+        for (let j = 0; j < bots.length; j++) if (isInFront(bots[j].x, bots[j].z)) { hitOther = true; break; }
+        if (!hitOther) for (let j = 0; j < marginais.length; j++) if (marginais[j].arrestState === 'free' && isInFront(marginais[j].x, marginais[j].z)) { hitOther = true; break; }
+        if (!hitOther) for (let j = 0; j < drivableCars.length; j++) if (isInFront(drivableCars[j].x, drivableCars[j].z, 7.2, 2.05)) { hitOther = true; break; }
+        if (!hitOther) for (let j = 0; j < traffic.length; j++) if (isInFront(traffic[j].x, traffic[j].z, 7.2, 2.05)) { hitOther = true; break; }
+        if (!hitOther && isInFront(policePatrol.x, policePatrol.z, 7.4, 2.05)) hitOther = true;
+        if (!hitOther) for (let j = 0; j < calembaMotos.length; j++) if (j !== mi && isInFront(calembaMotos[j].x, calembaMotos[j].z, 4.5, 1.5)) { hitOther = true; break; }
+      }
+      m.blocked = hitPlayer || hitOther;
+      if (m.blocked) {
+        m.insultUntil = now + 2200;
+        if (hitPlayer && now - m.lastPlayerToast > 3500) {
+          m.lastPlayerToast = now;
+          showToast('🏍️ Mototaxista: "Sai da frente caralho, queres me trazer azar!"');
+        }
+      } else {
+        const w2 = m.route[m.routeIndex], vx = w2.x - m.x, vz = w2.z - m.z, vd = Math.hypot(vx, vz);
+        if (vd > 0.01) {
+          m.x += (vx / vd) * m.speed * step60;
+          m.z += (vz / vd) * m.speed * step60;
+        }
+      }
+      if (vis) {
+        m.mesh.position.set(m.x, 0.14, m.z);
+        m.mesh.rotation.y = m.angle;
+        if (m.mesh.userData.hlMat) m.mesh.userData.hlMat.color.setHex((m.blocked && Math.floor(nowPerf / 140) % 2 === 0) ? 0xffffff : 0xfff5c0);
+        if (!m.blocked && m.mesh.userData.wheels) {
+          for (let w = 0; w < m.mesh.userData.wheels.length; w++) m.mesh.userData.wheels[w].rotation.x += m.speed * 0.45 * step60;
+        }
+      }
+    });
 
     bots.forEach((b, bi) => {
       const vis = Math.abs(b.x - player.x) < cullDist && Math.abs(b.z - player.z) < cullDist;
@@ -1503,6 +1633,12 @@ try {
       if (!hasJoined || m.arrestState === 'jailed' || dM > 40 || (m.arrestState === 'free' && !m.chasing)) hideTag(el);
       else if (m.arrestState === 'prisoner') placeTag(el, m.x, 3.25, m.z, `🚓 Preso pela Polícia! (${Math.max(0, Math.ceil((m.prisonerUntil - now) / 1000))}s)`);
       else { const rem = Math.max(0, Math.ceil((120000 - m.chaseElapsedMs) / 1000)), mm = Math.floor(rem / 60), ss = (rem % 60).toString().padStart(2, '0'); placeTag(el, m.x, 3.10, m.z, `🔪 Xé mo puto, vem aqui, não corre! (${mm}:${ss})`); }
+    });
+
+    calembaMotos.forEach((m, i) => {
+      const el = motoCallElems[i], dM = Math.hypot(player.x - m.x, player.z - m.z);
+      if (!hasJoined || dM > 45 || now > m.insultUntil) hideTag(el);
+      else placeTag(el, m.x, 2.75, m.z, '🤬 Sai da frente caralho, queres me trazer azar!');
     });
 
     {
