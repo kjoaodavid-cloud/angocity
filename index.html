@@ -89,7 +89,7 @@ html
   </style>
 </head>
 <body>
-  <div id="loading-screen"><div style="font-size:32px;">🏙️</div><div style="font-weight:800; color:#00d2d3;">A carregar NeoCity 3D, Centralidade do Kilamba & Calemba 2...</div><div style="font-size:12px; color:#a4b0be;">A preparar os bairros, praça informal, paragens e polícia</div></div>
+  <div id="loading-screen"><div style="font-size:32px;">🏙️</div><div style="font-weight:800; color:#00d2d3;">A carregar NeoCity 3D, Centralidade do Kilamba & Calemba 2...</div><div style="font-size:12px; color:#a4b0be;">A preparar os bairros, esquadra, praça informal e paragens</div></div>
   <div id="login-screen">
     <div class="modal-card">
       <div style="font-size:32px; text-align:center;">🏙️🚐</div><h2>NeoCity — Luanda 3D</h2>
@@ -444,27 +444,60 @@ try {
   }
   createKilambaSign(172, 0);
 
-  function createHealthUnit(x, z) {
-    const g = new THREE.Group(), wall = mkLambert(0x32c9e8), trim = mkLambert(0x159fc8), roof = mkLambert(0xc9343b), glass = mkMat(0xb9f1ff, { shininess: 80 }), frame = mkLambert(0xeaf6f8), door = mkLambert(0x5b211d), blue = mkLambert(0x164bd7);
-    mkBox(g, 44, 12, 32, wall, 0, 6, 0, true, true); mkBox(g, 46, 0.8, 34, roof, 0, 12.3, 0, true); mkBox(g, 18, 0.65, 7, roof, 0, 10.1, 19, true);
-    [-7.5, 7.5].forEach(px => mkBox(g, 0.65, 9, 0.65, frame, px, 5.0, 20.5, true)); mkBox(g, 18, 0.45, 0.65, frame, 0, 9.3, 20.5, true); mkBox(g, 4.2, 7.2, 0.35, door, 0, 3.8, 16.2, true);
-    [-15, -8, 8, 15].forEach(px => { mkBox(g, 5.2, 4.8, 0.3, frame, px, 6.1, 16.25, true); mkBox(g, 4.45, 4.05, 0.12, glass, px, 6.1, 16.05); mkBox(g, 0.18, 4.1, 0.16, trim, px, 6.1, 15.95); });
-    [-9, 2, 11].forEach(pz => { mkBox(g, 0.3, 4.8, 5.4, frame, 22.15, 6.2, pz, true); mkBox(g, 0.12, 4.0, 4.5, glass, 22.0, 6.2, pz); mkBox(g, 0.3, 4.8, 5.4, frame, -22.15, 6.2, pz, true); mkBox(g, 0.12, 4.0, 4.5, glass, -22.0, 6.2, pz); });
-    const signTex = mkTex(768, 192, ctx => { const grad = ctx.createLinearGradient(0, 0, 768, 192); grad.addColorStop(0, '#073b63'); grad.addColorStop(1, '#087f9d'); ctx.fillStyle = grad; ctx.fillRect(0, 0, 768, 192); ctx.strokeStyle = '#f4d35e'; ctx.lineWidth = 12; ctx.strokeRect(8, 8, 752, 176); ctx.fillStyle = '#ffffff'; ctx.fillRect(42, 42, 92, 92); ctx.fillStyle = '#087f9d'; ctx.fillRect(78, 54, 20, 68); ctx.fillRect(54, 78, 68, 20); ctx.fillStyle = '#ffffff'; ctx.textAlign = 'left'; ctx.font = '900 55px Arial'; ctx.fillText('UNIDADE DE SAÚDE', 160, 82); ctx.font = 'bold 29px Arial'; ctx.fillText('CENTRO MÉDICO • KILAMBA', 162, 130); ctx.font = 'bold 21px Arial'; ctx.fillStyle = '#f4d35e'; ctx.fillText('ATENDIMENTO E URGÊNCIAS', 162, 163); });
-    mkBox(g, 15.2, 4.2, 0.48, mkLambert(0x123b55), 0, 9.05, 16.55, true);
-    const sign = new THREE.Mesh(new THREE.PlaneGeometry(14.8, 3.7), new THREE.MeshBasicMaterial({ map: signTex })); sign.position.set(0, 9.05, 16.30); g.add(sign);
-    const infoTex = mkTex(256, 96, ctx => { ctx.fillStyle = '#f4d35e'; ctx.fillRect(0, 0, 256, 96); ctx.fillStyle = '#073b63'; ctx.font = '900 30px Arial'; ctx.textAlign = 'center'; ctx.fillText('ENTRADA', 128, 40); ctx.font = 'bold 22px Arial'; ctx.fillText('RECEPÇÃO →', 128, 72); });
-    const infoSign = new THREE.Mesh(new THREE.PlaneGeometry(4.8, 1.8), new THREE.MeshBasicMaterial({ map: infoTex })); infoSign.position.set(9.5, 4.2, 16.48); g.add(infoSign);
-    mkBox(g, 4.8, 7.0, 0.18, blue, -18.2, 4.0, 16.3); mkBox(g, 52, 0.22, 9, mkLambert(0xbfc7c8), 0, 0.12, 23, false, true);
-    const pMat = mkLambert(0x1688bd); [-11, 11].forEach(px => mkBox(g, 0.35, 22, 0.35, pMat, px, 11, 29, true));
-    const angolaTex = mkTex(256, 128, ctx => { ctx.fillStyle = '#d71920'; ctx.fillRect(0, 0, 256, 64); ctx.fillStyle = '#111111'; ctx.fillRect(0, 64, 256, 64); ctx.fillStyle = '#f4c542'; ctx.beginPath(); ctx.arc(128, 64, 18, 0, Math.PI * 2); ctx.fill(); });
-    const unitTex = mkTex(256, 128, ctx => { ctx.fillStyle = '#32b9e8'; ctx.fillRect(0, 0, 256, 128); ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 8; ctx.strokeRect(8, 8, 240, 112); ctx.fillStyle = '#ffffff'; ctx.font = 'bold 24px Arial'; ctx.textAlign = 'center'; ctx.fillText('SAÚDE', 128, 76); });
-    const flag1 = new THREE.Mesh(new THREE.PlaneGeometry(10, 5), new THREE.MeshLambertMaterial({ map: unitTex, side: THREE.DoubleSide })); flag1.position.set(-5.8, 19.0, 29); g.add(flag1);
-    const flag2 = new THREE.Mesh(new THREE.PlaneGeometry(10, 5), new THREE.MeshLambertMaterial({ map: angolaTex, side: THREE.DoubleSide })); flag2.position.set(16.2, 19.0, 29); g.add(flag2);
+  function createEsquadraPolicia(x, z) {
+    const g = new THREE.Group(), mBlue = mkLambert(0x7dbce6), mDarkBlue = mkLambert(0x133c68), mFence = mkLambert(0x165b94), mSidewalk = mkLambert(0xc8ced3), mWhite = mkLambert(0xf4f6f7), mDark = mkLambert(0x1a2026);
+    mkBox(g, 58, 0.16, 46, mSidewalk, 5, 0.08, 6, false, true);
+    const zincBeigeTex = cachedTex('zn_beige', 128, 128, ctx => { ctx.fillStyle = '#d8c7a0'; ctx.fillRect(0, 0, 128, 128); ctx.fillStyle = '#bfa87a'; for (let i = 0; i < 128; i += 8) ctx.fillRect(i, 0, 3, 128); });
+    const mRoof = new THREE.MeshLambertMaterial({ map: zincBeigeTex });
+    mkBox(g, 34, 6.4, 14, mBlue, 0, 3.2, -5, true, true);
+    mkBox(g, 36, 0.35, 16, mRoof, 0, 6.65, -5, true).rotation.x = 0.12;
+    [-20, 20].forEach(wx => {
+      mkBox(g, 9, 4.8, 12, mBlue, wx, 2.4, -4, true, true);
+      mkBox(g, 10, 0.3, 13, mRoof, wx, 4.95, -4, true).rotation.x = 0.10;
+      [-2.2, 2.2].forEach(ox => {
+        mkBox(g, 2.2, 1.8, 0.25, mDark, wx + ox, 2.8, 2.05);
+        [-0.5, 0, 0.5].forEach(bx => mkBox(g, 0.08, 1.8, 0.3, mWhite, wx + ox + bx, 2.8, 2.08));
+      });
+    });
+    mkBox(g, 2.4, 7.8, 3.2, mBlue, -3.6, 3.9, 2.5, true); mkBox(g, 2.4, 7.8, 3.2, mBlue, 3.6, 3.9, 2.5, true);
+    mkBox(g, 9.6, 3.0, 3.2, mBlue, 0, 6.3, 2.5, true); mkBox(g, 5.0, 4.8, 0.4, mDarkBlue, 0, 2.4, 1.2); mkBox(g, 1.8, 2.6, 0.25, mDark, 0, 1.4, 1.42);
+    const arch = new THREE.Mesh(new THREE.TorusGeometry(2.5, 0.45, 5, 12, Math.PI), mDarkBlue); arch.position.set(0, 3.5, 3.85); g.add(arch);
+    const esqTex = mkTex(512, 256, ctx => { ctx.fillStyle = '#f8f9fa'; ctx.fillRect(0, 0, 512, 256); ctx.strokeStyle = '#133c68'; ctx.lineWidth = 10; ctx.strokeRect(6, 6, 500, 244); ctx.fillStyle = '#0c56a8'; ctx.beginPath(); ctx.arc(256, 48, 24, 0, Math.PI * 2); ctx.fill(); ctx.strokeStyle = '#f1c40f'; ctx.lineWidth = 4; ctx.stroke(); ctx.fillStyle = '#133c68'; ctx.textAlign = 'center'; ctx.font = 'bold 21px Arial, sans-serif'; ctx.fillText('COMANDO GERAL DA POLÍCIA NACIONAL', 256, 108); ctx.font = 'bold 18px Arial, sans-serif'; ctx.fillText('COMANDO PROVINCIAL DE LUANDA', 256, 142); ctx.font = '900 44px Arial, sans-serif'; ctx.fillText('ESQUADRA', 256, 206); });
+    const esqSign = new THREE.Mesh(new THREE.PlaneGeometry(4.4, 2.2), new THREE.MeshBasicMaterial({ map: esqTex })); esqSign.position.set(0, 6.45, 4.15); g.add(esqSign);
+    mkBox(g, 5.4, 0.72, 4.6, mBlue, -8.5, 0.36, 13.5, true, true);
+    [0, 1, 2].forEach(s => mkBox(g, 5.4, 0.24, 0.48, mBlue, -8.5, 0.12 + s * 0.24, 16.9 - s * 0.45, true));
+    mkBox(g, 5.4, 3.8, 0.45, mBlue, -8.5, 2.6, 11.4, true); mkBox(g, 0.4, 3.8, 4.6, mBlue, -11.0, 2.6, 13.5, true);
+    mkBox(g, 0.55, 3.8, 0.55, mBlue, -10.8, 2.6, 15.5, true); mkBox(g, 0.55, 3.8, 0.55, mBlue, -6.2, 2.6, 15.5, true);
+    mkBox(g, 6.2, 0.5, 5.4, mBlue, -8.5, 4.65, 13.5, true); mkBox(g, 0.18, 2.6, 1.3, mFence, -5.85, 2.0, 12.6);
+    const ledTex = mkTex(256, 64, ctx => { ctx.fillStyle = '#0d1117'; ctx.fillRect(0, 0, 256, 64); ctx.strokeStyle = '#38bdf8'; ctx.lineWidth = 3; ctx.strokeRect(3, 3, 250, 58); ctx.fillStyle = '#7dd3fc'; ctx.font = 'bold 20px Arial, sans-serif'; ctx.textAlign = 'center'; ctx.fillText('POLÍCIA NACIONAL • 113', 128, 39); });
+    mkBox(g, 3.4, 0.75, 0.25, mDark, -8.5, 4.65, 16.25);
+    const ledPanel = new THREE.Mesh(new THREE.PlaneGeometry(3.2, 0.65), new THREE.MeshBasicMaterial({ map: ledTex })); ledPanel.position.set(-8.5, 4.65, 16.39); g.add(ledPanel);
+    const addFenceSection = (cx, len) => {
+      mkBox(g, len, 1.65, 0.45, mBlue, cx, 0.825, 13.5, true, true); mkBox(g, len, 0.1, 0.12, mFence, cx, 1.9, 13.5); mkBox(g, len, 0.1, 0.12, mFence, cx, 3.1, 13.5);
+      const step = isMobilePhone ? 0.85 : 0.50;
+      for (let bx = cx - len / 2 + 0.3; bx <= cx + len / 2 - 0.3; bx += step) mkBox(g, 0.08, 1.55, 0.08, mFence, bx, 2.45, 13.5);
+    };
+    addFenceSection(-18.0, 13.0); addFenceSection(14.5, 19.5);
+    [4.8, 14.5, 24.2, -11.5, -24.5].forEach(px => mkBox(g, 0.6, 3.3, 0.6, mBlue, px, 1.65, 13.5, true));
+    mkBox(g, 18.5, 0.42, 1.9, mBlue, 14.5, 0.21, 15.0, true);
+    const bushM = mkLambert(0x3b873e), bGeo = new THREE.SphereGeometry(0.85, 5, 5);
+    [9.5, 20.5].forEach(bx => { const b1 = new THREE.Mesh(bGeo, bushM); b1.position.set(bx, 1.0, 15.0); b1.scale.set(1.1, 1.0, 0.9); const b2 = new THREE.Mesh(bGeo, bushM); b2.position.set(bx + 0.6, 0.85, 14.9); b2.scale.set(0.75, 0.8, 0.75); g.add(b1, b2); });
+    const bt = new THREE.Mesh(new THREE.CylinderGeometry(0.14, 0.22, 3.8, 5), mkLambert(0x6d4c41)); bt.position.set(15.2, 1.9, 14.8); bt.rotation.z = -0.15; g.add(bt);
+    const flwM = mkLambert(0xd63384), flGeo = new THREE.SphereGeometry(0.68, 5, 4);
+    [[14.4, 3.6, 14.8], [15.8, 4.1, 14.7], [16.5, 3.3, 15.0], [13.8, 3.1, 14.9]].forEach(fp => { const f = new THREE.Mesh(flGeo, flwM); f.position.set(fp[0], fp[1], fp[2]); g.add(f); });
+    const poleM = mkLambert(0xbdc3c7);
+    [11.0, 14.5, 18.0].forEach(px => { const p = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.12, 14.5, 5), poleM); p.position.set(px, 7.25, 8.5); g.add(p); });
+    const polFlagTex = mkTex(256, 128, ctx => { ctx.fillStyle = '#0c56a8'; ctx.fillRect(0, 0, 256, 128); ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 6; ctx.strokeRect(6, 6, 244, 116); ctx.fillStyle = '#ffffff'; ctx.beginPath(); ctx.arc(128, 64, 32, 0, Math.PI * 2); ctx.fill(); ctx.strokeStyle = '#f1c40f'; ctx.lineWidth = 4; ctx.stroke(); ctx.fillStyle = '#0c56a8'; ctx.font = 'bold 14px Arial, sans-serif'; ctx.textAlign = 'center'; ctx.fillText('POLÍCIA', 128, 69); });
+    const angFlagTex = mkTex(256, 128, ctx => { ctx.fillStyle = '#d71920'; ctx.fillRect(0, 0, 256, 64); ctx.fillStyle = '#111111'; ctx.fillRect(0, 64, 256, 64); ctx.fillStyle = '#f4c542'; ctx.beginPath(); ctx.arc(128, 64, 18, 0, Math.PI * 2); ctx.fill(); });
+    const fl1 = new THREE.Mesh(new THREE.PlaneGeometry(5.6, 3.0), new THREE.MeshLambertMaterial({ map: polFlagTex, side: THREE.DoubleSide })); fl1.position.set(17.3, 12.8, 8.5); fl1.rotation.y = 0.25; g.add(fl1);
+    const fl2 = new THREE.Mesh(new THREE.PlaneGeometry(5.6, 3.0), new THREE.MeshLambertMaterial({ map: angFlagTex, side: THREE.DoubleSide })); fl2.position.set(20.8, 12.8, 8.8); fl2.rotation.y = 0.25; g.add(fl2);
     g.position.set(x, 0, z); scene.add(g);
-    addSolidBox(x, z, 44, 32); addSolidBox(x - 7.5, z + 20.5, 0.8, 0.8); addSolidBox(x + 7.5, z + 20.5, 0.8, 0.8);
+    addSolidBox(x, z - 5, 34, 14); addSolidBox(x - 20, z - 4, 9, 12); addSolidBox(x + 20, z - 4, 9, 12);
+    addSolidBox(x - 3.6, z + 2.5, 2.4, 3.2); addSolidBox(x + 3.6, z + 2.5, 2.4, 3.2);
+    addSolidBox(x - 18.0, z + 13.5, 13.0, 0.8); addSolidBox(x + 14.5, z + 13.5, 19.5, 0.8); addSolidBox(x + 14.5, z + 15.0, 18.5, 1.9);
+    addSolidBox(x - 8.5, z + 11.4, 5.4, 0.6); addSolidBox(x - 11.0, z + 13.5, 0.6, 4.6); addSolidBox(x - 10.8, z + 15.5, 0.7, 0.7); addSolidBox(x - 6.2, z + 15.5, 0.7, 0.7);
   }
-  createHealthUnit(160, 95);
+  createEsquadraPolicia(160, 95);
 
   const plots = [{ x: 25, z: 92, built: false }, { x: -25, z: 92, built: false }, { x: 92, z: -92, built: false }, { x: -92, z: -92, built: false }, { x: 245, z: -160, built: false }, { x: 335, z: 160, built: false }, { x: -245, z: 42, built: false }];
   plots.forEach(p => { p.pad = mkBox(scene, 18, 0.2, 18, mkLambert(0x00d2d3), p.x, 0.1, p.z); });
@@ -695,7 +728,6 @@ try {
     const qm = createHuman(q.shirt, 0x9c5527, 0x151517, 0x2f3640, 0x1c2a44, { gender: 'female', style: q.style, hairStyle: 'lenco' });
     qm.position.set(q.x, -0.45, q.z); qm.rotation.y = q.ry; qm.userData.legL.rotation.x = -1.35; qm.userData.legR.rotation.x = -1.35; qm.userData.armL.rotation.x = -0.55; qm.userData.armR.rotation.x = -0.55;
   });
-  [{ x: 137, z: 115, angle: -0.45 }, { x: 183, z: 115, angle: 0.45 }, { x: 160, z: 119, angle: Math.PI }].forEach(p => { const officer = createHuman(0x142746, 0x9c5527, 0x111820, 0x111820, 0x182338); officer.position.set(p.x, 0, p.z); officer.rotation.y = p.angle; pushSolidCircle({ x: p.x, z: p.z, r: 0.5 }); });
 
   function createCar3D(color) {
     const g = new THREE.Group(), hlM = mkBasic(0xdff9fb), tlM = mkBasic(0xff4757), wG = new THREE.CylinderGeometry(0.42, 0.42, 0.32, isMobilePhone ? 7 : 12), wM = mkLambert(0x111111);
@@ -709,16 +741,20 @@ try {
   const player = { mesh: mkAvatarMesh(myAvatar), x: -12, y: 0, z: 10, vy: 0, walkCycle: 0, money: 200, currentCar: null };
   function rebuildPlayerAvatar() { const vis = player.mesh ? player.mesh.visible : true; scene.remove(player.mesh); player.mesh = mkAvatarMesh(myAvatar); player.mesh.position.set(player.x, player.y, player.z); player.mesh.visible = vis; }
   window.selectGender = g => { myAvatar.gender = g === 'female' ? 'female' : 'male'; localStorage.setItem('neocity_player_gender', myAvatar.gender); document.getElementById('btn-gender-male').classList.toggle('selected', myAvatar.gender === 'male'); document.getElementById('btn-gender-female').classList.toggle('selected', myAvatar.gender === 'female'); rebuildPlayerAvatar(); };
-  renderAvatarSwatches(); window.selectGender(myAvatar.gender);
-
-  const drivableCars = [{ name: 'Carro Desportivo', mesh: createCar3D(0xff4757), x: 5, z: 14, angle: 0, speed: 0, hw: 1.15, hl: 2.3 }, { name: 'Candongueiro', mesh: createCandongueiro3D(), x: -16, z: -8, angle: Math.PI / 2, speed: 0, hw: 1.12, hl: 2.55 }, { name: 'Candongueiro', mesh: createCandongueiro3D(), x: 10, z: 26, angle: 0, speed: 0, hw: 1.12, hl: 2.55 }, { name: 'Candongueiro Kilamba', mesh: createCandongueiro3D(), x: 205, z: 12, angle: 0, speed: 0, hw: 1.12, hl: 2.55 }, { name: 'Carro Desportivo', mesh: createCar3D(0xfeca57), x: 294, z: -14, angle: Math.PI / 2, speed: 0, hw: 1.15, hl: 2.3 }, { name: 'Candongueiro Calemba 2', mesh: createCandongueiro3D(), x: -288, z: -12, angle: Math.PI, speed: 0, hw: 1.12, hl: 2.55 }];
+  renderAvatarSwatches(); window.selectGender(myAvatar.gender);const drivableCars = [{ name: 'Carro Desportivo', mesh: createCar3D(0xff4757), x: 5, z: 14, angle: 0, speed: 0, hw: 1.15, hl: 2.3 }, { name: 'Candongueiro', mesh: createCandongueiro3D(), x: -16, z: -8, angle: Math.PI / 2, speed: 0, hw: 1.12, hl: 2.55 }, { name: 'Candongueiro', mesh: createCandongueiro3D(), x: 10, z: 26, angle: 0, speed: 0, hw: 1.12, hl: 2.55 }, { name: 'Candongueiro Kilamba', mesh: createCandongueiro3D(), x: 205, z: 12, angle: 0, speed: 0, hw: 1.12, hl: 2.55 }, { name: 'Carro Desportivo', mesh: createCar3D(0xfeca57), x: 294, z: -14, angle: Math.PI / 2, speed: 0, hw: 1.15, hl: 2.3 }, { name: 'Candongueiro Calemba 2', mesh: createCandongueiro3D(), x: -288, z: -12, angle: Math.PI, speed: 0, hw: 1.12, hl: 2.55 }];
   drivableCars.forEach(c => { c.cosA = Math.cos(c.angle); c.sinA = Math.sin(c.angle); c.mesh.position.set(c.x, 0, c.z); c.mesh.rotation.y = c.angle; });
-  const traffic = [{ mesh: createCandongueiro3D(), x: -3.5, z: -180, vz: 0.45, vx: 0, angle: 0, hw: 1.12, hl: 2.55 }, { mesh: createCandongueiro3D(), x: 3.5, z: 190, vz: -0.44, vx: 0, angle: Math.PI, hw: 1.12, hl: 2.55 }, { mesh: createCandongueiro3D(), x: -240, z: 3.5, vz: 0, vx: 0.46, angle: Math.PI / 2, hw: 1.12, hl: 2.55 }, { mesh: createCandongueiro3D(), x: 280, z: -3.5, vz: 0, vx: -0.46, angle: -Math.PI / 2, hw: 1.12, hl: 2.55 }, { mesh: createCar3D(0xfeca57), x: 61.5, z: -120, vz: 0.48, vx: 0, angle: 0, hw: 1.15, hl: 2.3 }, { mesh: createCar3D(0xffffff), x: 196.5, z: -80, vz: 0.45, vx: 0, angle: 0, hw: 1.15, hl: 2.3 }, { mesh: createCandongueiro3D(), x: 293.5, z: 120, vz: -0.42, vx: 0, angle: Math.PI, hw: 1.12, hl: 2.55 }, { mesh: createCandongueiro3D(), x: -298.5, z: -115, vz: 0.44, vx: 0, angle: 0, hw: 1.12, hl: 2.55 }, { mesh: createCar3D(0xffffff), x: -291.5, z: 115, vz: -0.46, vx: 0, angle: Math.PI, hw: 1.15, hl: 2.3 }];
+  const traffic = [{ mesh: createCandongueiro3D(), x: -3.5, z: -180, vz: 0.45, vx: 0, angle: 0, hw: 1.12, hl: 2.55 }, { mesh: createCandongueiro3D(), x: 3.5, z: 190, vz: -0.44, vx: 0, angle: Math.PI, hw: 1.12, hl: 2.55 }, { mesh: createCandongueiro3D(), x: -240, z: 3.5, vz: 0, vx: 0.46, angle: Math.PI / 2, hw: 1.12, hl: 2.55 }, { mesh: createCandongueiro3D(), x: 280, z: -3.5, vz: 0, vx: -0.46, angle: -Math.PI / 2, hw: 1.12, hl: 2.55 }, { mesh: createCar3D(0xfeca57), x: 61.5, z: -120, vz: 0.48, vx: 0, angle: 0, hw: 1.15, hl: 2.3 }, { mesh: createCar3D(0xffffff), x: 196.5, z: -80, vz: 0.45, vx: 0, angle: 0, hw: 1.15, hl: 2.3 }, { create: false, mesh: createCandongueiro3D(), x: 293.5, z: 120, vz: -0.42, vx: 0, angle: Math.PI, hw: 1.12, hl: 2.55 }, { mesh: createCandongueiro3D(), x: -298.5, z: -115, vz: 0.44, vx: 0, angle: 0, hw: 1.12, hl: 2.55 }, { mesh: createCar3D(0xffffff), x: -291.5, z: 115, vz: -0.46, vx: 0, angle: Math.PI, hw: 1.15, hl: 2.3 }];
   traffic.forEach(c => { c.cosA = Math.cos(c.angle); c.sinA = Math.sin(c.angle); c.mesh.rotation.y = c.angle; });
-  [{ x: 160, z: 130, angle: Math.PI }, { x: 200, z: 95, angle: -Math.PI / 2 }, { x: 130, z: 95, angle: Math.PI / 2 }].forEach(p => { const pc = createPoliciaNacional3D(); pc.position.set(p.x, 0, p.z); pc.rotation.y = p.angle; pc.scale.set(0.92, 0.92, 0.92); pushStaticVehicle(p.x, p.z, p.angle, 1.10, 2.65); });
+  [{ x: 146, z: 120.2, angle: Math.PI / 2 }, { x: 176, z: 120.2, angle: -Math.PI / 2 }, { x: 190.8, z: 97, angle: 0 }].forEach(p => { const pc = createPoliciaNacional3D(); pc.position.set(p.x, 0, p.z); pc.rotation.y = p.angle; pc.scale.set(0.92, 0.92, 0.92); pushStaticVehicle(p.x, p.z, p.angle, 1.10, 2.65); });
 
   const policeRoute = [{ x: 0, z: 0 }, { x: -195, z: 0 }, { x: -295, z: 0 }, { x: -295, z: -65 }, { x: -195, z: -65 }, { x: -195, z: -130 }, { x: -295, z: -130 }, { x: -295, z: 65 }, { x: -195, z: 65 }, { x: -195, z: 130 }, { x: -295, z: 130 }, { x: -295, z: 0 }, { x: -65, z: 0 }, { x: -65, z: 130 }, { x: 65, z: 130 }, { x: 65, z: -130 }, { x: 0, z: -130 }, { x: 0, z: 0 }, { x: 200, z: 0 }, { x: 200, z: 130 }, { x: 290, z: 130 }, { x: 290, z: -130 }, { x: 380, z: -130 }, { x: 380, z: 0 }, { x: 200, z: 0 }];
+  const policePatrol = { mesh: createPoliciaNacional3D(), x: -55, z: 0, angle: -Math.PI / 2, cosA: Math.cos(-Math.PI / 2), sinA: Math.sin(-Math.PI / 2), routeIndex: 1, targetMarginal: null };
+  policePatrol.mesh.position.set(policePatrol.x, 0, policePatrol.z); policePatrol.mesh.rotation.y = policePatrol.angle;
+
   const bots = [
+    { name: 'Agente Divaldo', role: 'Sentinela da Esquadra', rewarded: false, stationary: true, fixedAngle: 0, isEsquadraGuard: true, guardType: 'sentinela', homeX: 151.5, homeY: 0.72, homeZ: 108.6, approachCooldownUntil: 0, mesh: createHuman(0x74b9ff, 0x9c5527, 0x111820, 0x111820, 0x11161f), x: 151.5, z: 108.6, vx: 0, vz: 0, cycle: 0, dialogue: { start: { text: 'Alto! Porque está a circular aqui junto à Esquadra? Quer alguma coisa?', options: [{ label: 'Estou só de passagem pelo passeio.', next: 'passar' }, { label: 'Quero denunciar marginais em Calemba 2!', next: 'denuncia' }, { label: 'Preciso de informações.', next: 'info' }] }, passar: { text: 'Certo, cidadão. Pode continuar o seu caminho, mas mantenha a ordem!', options: [{ label: 'Obrigado, agente!', next: 'start' }] }, denuncia: { text: 'Boa atitude! A nossa viatura patrulha a cidade e prende todo marginal na estrada! Toma 15kz pelo apoio cívico.', reward: 15, options: [{ label: 'Valeu!', next: 'start' }] }, info: { text: 'Esta é a Esquadra da Polícia Nacional no Kilamba. As viaturas estão aqui no passeio prontas a sair!', options: [{ label: 'Entendido!', next: 'start' }] } } },
+    { name: 'Agente Bento', role: 'Polícia da Esquadra', rewarded: false, stationary: true, fixedAngle: 0, isEsquadraGuard: true, guardType: 'approach', homeX: 160, homeY: 0.16, homeZ: 113.5, approachCooldownUntil: 0, approaching: false, mesh: createHuman(0x142746, 0x8d5524, 0x111820, 0x111820, 0x182338), x: 160, z: 113.5, vx: 0, vz: 0, cycle: 0, dialogue: { start: { text: 'Boa tarde! Porque está a circular aqui na frente da Esquadra? Precisa de alguma coisa?', options: [{ label: 'Só estou a passear pela zona.', next: 'passar' }, { label: 'Vim ver as viaturas e pedir ajuda.', next: 'ajuda' }] }, passar: { text: 'Tudo bem, cidadão. Pode seguir viagem com tranquilidade!', options: [{ label: 'Obrigado!', next: 'start' }] }, ajuda: { text: 'Se algum marginal te incomodar em Calemba 2, corre para a estrada que a nossa viatura prende-o na hora!', options: [{ label: 'Ótima dica!', next: 'start' }] } } },
+    { name: 'Agente Domingas', role: 'Polícia de Ronda', rewarded: false, stationary: true, fixedAngle: 0, isEsquadraGuard: true, guardType: 'approach', homeX: 172, homeY: 0.16, homeZ: 115.2, approachCooldownUntil: 0, approaching: false, mesh: createHuman(0x142746, 0xa5694f, 0x111820, 0x111820, 0x182338, { gender: 'female', hairStyle: 'puff' }), x: 172, z: 115.2, vx: 0, vz: 0, cycle: 0, dialogue: { start: { text: 'Olá cidadão! Porque está a circular aqui perto das viaturas no passeio? Quer alguma coisa?', options: [{ label: 'Estou só a olhar a Esquadra.', next: 'olhar' }, { label: 'Quero ajudar a manter a segurança (+10kz)', next: 'coop' }] }, olhar: { text: 'Está muito bem. Respeite as viaturas estacionadas no passeio e tenha um bom dia!', options: [{ label: 'Bom trabalho!', next: 'start' }] }, coop: { text: 'Obrigada pela colaboração com a Polícia Nacional! Toma 10kz.', reward: 10, options: [{ label: 'Obrigado!', next: 'start' }] } } },
     { name: 'Bumba', role: 'Lotador — Calemba 2', rewarded: false, stationary: true, fixedAngle: 0, isLotador: true, shoutLines: ['📣 CALEMBA 2! CALEMBA 2!', '🚐 Sobe já, Calemba 2 direto!'], mesh: createHuman(0x1e272e, 0x8d5524, 0x151517, 0x00c8ff), x: -26.5, z: 9.5, vx: 0, vz: 0, cycle: 0, dialogue: { start: { text: 'Calemba 2! Calemba 2! Tá a sair agora! Sobe no Candongueiro por apenas 20kz!', options: [{ label: '🚐 Apanhar Candongueiro para Calemba 2 (20kz)', next: 'ride_calemba' }, { label: 'Onde fica essa paragem?', next: 'info' }] }, ride_calemba: { text: 'Bora!', ride: { x: -232, z: 10.6, zone: 'Calemba 2', cost: 20 } }, info: { text: 'É a Paragem do Centro! Eu chamo para Calemba 2 e o Juca ali ao lado chama para o Kilamba.', options: [{ label: 'Valeu!', next: 'start' }] } } },
     { name: 'Juca', role: 'Lotador — Kilamba', rewarded: false, stationary: true, fixedAngle: 0, isLotador: true, shoutLines: ['📣 KILAMBA! KILAMBA!', '🚐 Centralidade do Kilamba — Entra!'], mesh: createHuman(0x2f3640, 0xa5694f, 0x151517, 0xfeca57), x: -20.5, z: 9.5, vx: 0, vz: 0, cycle: 0, dialogue: { start: { text: 'Kilamba! Kilamba! Centralidade do Kilamba direto! Só falta um lugar, sobe já!', options: [{ label: '🚐 Apanhar Candongueiro para Kilamba (20kz)', next: 'ride_kilamba' }, { label: 'Quanto tempo demora?', next: 'time' }] }, ride_kilamba: { text: 'Bora!', ride: { x: 245, z: 10.6, zone: 'Centralidade do Kilamba', cost: 20 } }, time: { text: 'Num instante pela avenida principal! Só 20kz a corrida.', options: [{ label: 'Fixe!', next: 'start' }] } } },
     { name: 'Puto Zéca', role: 'Lotador — Paragem Calemba 2', rewarded: false, stationary: true, fixedAngle: 0, isLotador: true, shoutLines: ['📣 CENTRO / KILAMBA!', '🚐 Paragem Calemba 2 — Sobe!'], mesh: createHuman(0x576574, 0x9c5527, 0x151517, 0x1dd1a1), x: -234.5, z: 9.5, vx: 0, vz: 0, cycle: 0, dialogue: { start: { text: 'Centro! Arreiou! Kilamba! Sobe já para sair de Calemba 2!', options: [{ label: '🚐 Ir para o Centro / Arreiou (20kz)', next: 'ride_centro' }, { label: '🚐 Ir direto para o Kilamba (20kz)', next: 'ride_kilamba' }] }, ride_centro: { text: 'Centro!', ride: { x: -24, z: 10.6, zone: 'Centro', cost: 20 } }, ride_kilamba: { text: 'Kilamba!', ride: { x: 245, z: 10.6, zone: 'Centralidade do Kilamba', cost: 20 } } } },
@@ -770,6 +806,14 @@ try {
   ambientZungueiras.forEach(z => { const dv = document.createElement('div'); dv.className = 'zunga-shout'; dv.style.display = 'none'; lotadorCallsEl.appendChild(dv); zungaCallElems.set(z, dv); });
   const marginalCallElems = marginais.map(() => { const d = document.createElement('div'); d.className = 'marginal-shout'; d.style.display = 'none'; lotadorCallsEl.appendChild(d); return d; });
   const policeShoutEl = document.createElement('div'); policeShoutEl.className = 'police-shout'; policeShoutEl.style.display = 'none'; lotadorCallsEl.appendChild(policeShoutEl);
+  const esquadraCallElems = bots.filter(b => b.isEsquadraGuard).map(b => {
+    if (b.guardType === 'sentinela') {
+      const gun = new THREE.Mesh(new THREE.BoxGeometry(0.10, 0.12, 0.95), mkLambert(0x111111));
+      gun.position.set(0.18, 1.32, 0.28); gun.rotation.set(0.45, -0.55, 0); b.mesh.add(gun);
+    }
+    const d = document.createElement('div'); d.className = 'police-shout'; d.style.display = 'none';
+    lotadorCallsEl.appendChild(d); return { bot: b, el: d };
+  });
 
   function startPresence() {
     if (isCloudMode && sb) {
@@ -823,6 +867,7 @@ try {
 
   function detectZone(px, pz) {
     if (px > ARREIOU_CX - 12.6 && px < ARREIOU_CX + 12.6 && pz > ARREIOU_CZ - 9.6 && pz < ARREIOU_CZ + 9.6) return 'Supermercado Arreiou';
+    if (px >= 136 && px <= 194 && pz >= 78 && pz <= 124) return 'Esquadra da Polícia Nacional';
     if (px >= -292 && px <= -198 && pz >= 134 && pz <= 190) return 'Praça de Calemba 2';
     if (px >= 172 && Math.abs(pz) <= 135) return 'Centralidade do Kilamba';
     if (px <= -172 && px >= -372 && Math.abs(pz) <= 130) return 'Calemba 2';
@@ -956,12 +1001,12 @@ try {
   function getSmartReply(bot, msg) {
     const m = msg.toLowerCase();
     if (/(ol[aá]|oi\b|boas|bom dia|boa tarde|boa noite|e a[ií])/.test(m)) return `Olá, ${myName || 'amigo'}! Tudo fixe por aí? Eu sou ${bot.name}.`;
+    if (/(esquadra|pol[ií]cia|viatura|prender|preso)/.test(m)) return 'A Esquadra da Polícia Nacional fica aqui no Kilamba com as viaturas no passeio e agentes em serviço!';
     if (/(pra[cç]a|mercado|zunga|banheira|bacia|quitand)/.test(m)) return 'A Praça Informal de Calemba 2 tá cheia de vida! Tem zungueiras com banheiras na cabeça, bancas no chão e guarda-sóis!';
-    if (/(pol[ií]cia|viatura|prender|preso)/.test(m)) return 'A pick-up da Polícia Nacional patrulha toda a cidade! Todo marginal visto na estrada é preso!';
     if (/(marginal|bandido|ladr[aã]o|faca|assalt)/.test(m)) return 'Nos arredores de Calemba 2 há marginais — mas se pisarem a estrada a Polícia Nacional prende-os!';
     if (/(paragem|lotador|subir|embarcar)/.test(m)) return 'As paragens têm candongueiros sempre prontos para Calemba 2, Centro e Kilamba por 20kz!';
     if (/(arreiou|p[aã]o|loja|comprar|barato|supermercado)/.test(m)) return 'O Supermercado Arreiou tá aberto! Entra pelas portas de vidro para comprar pão quente e sumo!';
-    return ['Haha, tens razão! Esta cidade está cada vez mais vasta.', 'Já passaste pela Praça Informal ao lado de Calemba 2?', 'Boa conversa! Se precisares de algo, estou por aqui.', 'NeoCity, Calemba 2 e Kilamba nunca param!'][Math.floor(Math.random() * 4)];
+    return ['Haha, tens razão! Esta cidade está cada vez mais vasta.', 'Já passaste pela Esquadra da Polícia Nacional?', 'Boa conversa! Se precisares de algo, estou por aqui.', 'NeoCity, Calemba 2 e Kilamba nunca param!'][Math.floor(Math.random() * 4)];
   }
   window.sendCustomChat = () => { const inp = document.getElementById('chat-input'); if (!inp || !activeChatBot) return; const t = inp.value.trim(); if (!t) return; chatHistory.push({ from: 'player', text: t }); chatHistory.push({ from: 'npc', text: getSmartReply(activeChatBot, t) }); renderChatBubble(true); };
   function renderPromptBubble(bot) { const sk = `prompt:${bot.name}`; if (lastBubbleState === sk) return; lastBubbleState = sk; bubbleEl.innerHTML = `<button class="npc-prompt" onclick="openNearbyChat()">💬 <strong>${esc(bot.name)}</strong> <span>• Conversar <span class="k" style="font-size:10px;">E / ◻️</span></span></button>`; }
@@ -1071,18 +1116,14 @@ try {
     manualUltraLight = !manualUltraLight;
     const btn = document.getElementById('perf-btn');
     if (manualUltraLight) {
-      applyQualityProfile(2);
-      if (btn) btn.innerText = '⚡ Ultra';
-      showToast('⚡ Modo Ultra-Leve ativado!');
+      applyQualityProfile(2); if (btn) btn.innerText = '⚡ Ultra'; showToast('⚡ Modo Ultra-Leve ativado!');
     } else {
-      autoQualityLevel = 0;
-      renderer.shadowMap.enabled = !isMobilePhone; sun.castShadow = !isMobilePhone;
+      autoQualityLevel = 0; renderer.shadowMap.enabled = !isMobilePhone; sun.castShadow = !isMobilePhone;
       renderer.setPixelRatio(isMobilePhone ? Math.min(window.devicePixelRatio || 1, 0.9) : Math.min(window.devicePixelRatio || 1, 1.25));
       camera.far = isMobilePhone ? 205 : 460; camera.updateProjectionMatrix();
       baseFogDensity = isMobilePhone ? 0.0040 : 0.0018;
       if (calembaDustPoints) calembaDustPoints.visible = true;
-      if (btn) btn.innerText = '⚡ FPS';
-      showToast('✨ Qualidade padrão restaurada!');
+      if (btn) btn.innerText = '⚡ FPS'; showToast('✨ Qualidade padrão restaurada!');
     }
   };
 
@@ -1210,6 +1251,7 @@ try {
       lastZone = currentZone; document.getElementById('zone-ui').innerText = `📍 ${currentZone}`;
       if (hasJoined) {
         if (currentZone === 'Supermercado Arreiou') showToast('🛒 Bem-vindo ao Supermercado Arreiou! Tá Barato!');
+        else if (currentZone === 'Esquadra da Polícia Nacional') showToast('🚓 Esquadra da Polícia Nacional — Mantenha a ordem!');
         else if (currentZone === 'Praça de Calemba 2') showToast('🧺 Praça Informal de Calemba 2 — Zungueiras & Comércio!');
         else if (currentZone === 'Centralidade do Kilamba') showToast('🏘️ Bem-vindo à Centralidade do Kilamba!');
         else if (currentZone === 'Calemba 2') showToast('🌫️ Calemba 2 — Cuidado com os Marginais!');
@@ -1286,7 +1328,7 @@ try {
     bots.forEach((b, bi) => {
       const vis = Math.abs(b.x - player.x) < cullDist && Math.abs(b.z - player.z) < cullDist;
       if (b.mesh.visible !== vis) b.mesh.visible = vis;
-      const botY = (b.stationary || b.indoorArreiou) ? 0.16 : 0;
+      const botY = b.homeY ?? ((b.stationary || b.indoorArreiou) ? 0.16 : 0);
       if (b === activeChatBot) {
         b.mesh.position.set(b.x, botY, b.z); b.mesh.rotation.y = Math.atan2(player.x - b.x, player.z - b.z);
         b.mesh.userData.legL.rotation.x = 0; b.mesh.userData.legR.rotation.x = 0; b.mesh.userData.armL.rotation.x = 0;
@@ -1294,7 +1336,7 @@ try {
         return;
       }
       if (b.stationary) {
-        if (!vis) return;
+        if (!vis || b.isEsquadraGuard) return;
         b.mesh.position.set(b.x, b.isLotador ? 0.12 : botY, b.z); b.mesh.rotation.y = b.fixedAngle || 0;
         if (b.isLotador) { b.mesh.userData.armR.rotation.x = -1.15 + Math.sin(nowPerf * 0.008 + b.x) * 0.35; b.mesh.userData.armR.rotation.z = 0.45; }
         return;
@@ -1320,6 +1362,45 @@ try {
       b.mesh.userData.armL.rotation.x = b.marketZungueira ? -sw * 0.45 : -sw;
       if (b.steadyHand) { b.mesh.userData.armR.rotation.x = -2.45 + Math.sin(b.cycle) * 0.04; b.mesh.userData.armR.rotation.z = 0.22; }
       else { b.mesh.userData.armR.rotation.x = b.marketZungueira ? sw * 0.45 : sw; b.mesh.userData.armR.rotation.z = 0; }
+    });
+
+    esquadraCallElems.forEach(({ bot: g, el }) => {
+      if (!g.mesh.visible) { hideTag(el); return; }
+      const distP = Math.hypot(player.x - g.x, player.z - g.z);
+      const nearEsquadra = hasJoined && player.x >= 134 && player.x <= 196 && player.z >= 102 && player.z <= 128;
+      let shoutMsg = '';
+      if (g.guardType === 'sentinela') {
+        g.mesh.position.set(g.homeX, g.homeY, g.homeZ);
+        g.mesh.rotation.y = nearEsquadra ? Math.atan2(player.x - g.x, player.z - g.z) : 0;
+        g.mesh.userData.armL.rotation.x = -0.85; g.mesh.userData.armR.rotation.x = -0.95;
+        if (nearEsquadra && distP < 12) shoutMsg = player.currentCar ? '👮 Zona da Esquadra — circule devagar!' : '👮 Alto! Porque está a circular aqui? Quer alguma coisa?';
+      } else {
+        let targetX = g.homeX, targetZ = g.homeZ, moving = false;
+        if (g !== activeChatBot && nearEsquadra && !player.currentCar && distP < 11.5 && now > g.approachCooldownUntil) g.approaching = true;
+        if (g.approaching) {
+          if (!nearEsquadra || player.currentCar || distP > 15 || g === activeChatBot) {
+            g.approaching = false;
+            if (g === activeChatBot) g.approachCooldownUntil = now + 25000;
+          } else {
+            shoutMsg = '👮 Porque está a circular aqui? Quer alguma coisa?';
+            if (distP > 2.4) { targetX = player.x; targetZ = player.z; moving = true; }
+            else { g.mesh.rotation.y = Math.atan2(player.x - g.x, player.z - g.z); g.mesh.userData.armR.rotation.x = -0.9; }
+          }
+        }
+        if (!g.approaching && Math.hypot(g.homeX - g.x, g.homeZ - g.z) > 0.35) moving = true;
+        if (moving) {
+          const dx = targetX - g.x, dz = targetZ - g.z, d = Math.hypot(dx, dz), spd = 0.095 * step60;
+          const ns = applySolidCollisions(g.x + (dx / d) * spd, g.z + (dz / d) * spd, 0.52);
+          g.x = ns.x; g.z = ns.z; g.mesh.rotation.y = Math.atan2(dx, dz);
+          g.cycle += 0.16 * step60; const sw = Math.sin(g.cycle) * 0.5;
+          g.mesh.userData.legL.rotation.x = sw; g.mesh.userData.legR.rotation.x = -sw; g.mesh.userData.armL.rotation.x = -sw; g.mesh.userData.armR.rotation.x = sw;
+        } else if (!g.approaching) {
+          g.mesh.rotation.y = 0; g.mesh.userData.legL.rotation.x = 0; g.mesh.userData.legR.rotation.x = 0; g.mesh.userData.armL.rotation.x = 0; g.mesh.userData.armR.rotation.x = 0;
+        }
+        g.mesh.position.set(g.x, g.homeY, g.z);
+      }
+      if (!hasJoined || !shoutMsg || g === activeChatBot || g === nearbyBot) hideTag(el);
+      else placeTag(el, g.x, g.homeY + 3.05, g.z, shoutMsg);
     });
 
     ambientZungueiras.forEach((z, zi) => {
@@ -1433,7 +1514,8 @@ try {
     const targetBot = activeChatBot || nearbyBot;
     if (targetBot) {
       if (!activeChatBot) renderPromptBubble(targetBot);
-      projVec.set(targetBot.x, targetBot.marketZungueira ? 3.45 : 3.05, targetBot.z); projVec.project(camera);
+      const tY = (targetBot.homeY || 0) + (targetBot.marketZungueira ? 3.45 : 3.05);
+      projVec.set(targetBot.x, tY, targetBot.z); projVec.project(camera);
       if (projVec.z > 1) hideTag(bubbleEl);
       else {
         let sx = Math.round((projVec.x * 0.5 + 0.5) * winW), sy = Math.round((-projVec.y * 0.5 + 0.5) * winH);
