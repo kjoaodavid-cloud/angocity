@@ -1,4 +1,3 @@
-html
 <!DOCTYPE html>
 <html lang="pt">
 <head>
@@ -65,12 +64,17 @@ html
     #shop-panel button { border: none; padding: 9px 10px; border-radius: 10px; color: #fff; font-weight: 700; cursor: pointer; text-align: left; font-size: 12.5px; touch-action: manipulation; display: flex; justify-content: space-between; align-items: center; }
     #toast { position: fixed; top: 64px; left: 50%; transform: translateX(-50%); background: linear-gradient(135deg,#00d2d3,#1dd1a1); color: #090d16; padding: 8px 18px; border-radius: 20px; font-weight: 800; font-size: 13px; display: none; z-index: 25; white-space: nowrap; }
     #lotador-calls { position: fixed; inset: 0; pointer-events: none; z-index: 14; overflow: hidden; }
-    .lotador-shout { position: absolute; transform: translate(-50%,-100%); background: rgba(245,185,21,0.95); color: #090d16; border: 2px solid #fff; border-radius: 16px; padding: 5px 11px; font-size: 11.5px; font-weight: 800; white-space: nowrap; pointer-events: auto; cursor: pointer; touch-action: manipulation; }
-    .zunga-shout { position: absolute; transform: translate(-50%,-100%); background: rgba(16,172,132,0.93); color: #fff; border: 1.5px solid #feca57; border-radius: 14px; padding: 4px 9px; font-size: 11px; font-weight: 800; white-space: nowrap; pointer-events: none; }
-    .marginal-shout { position: absolute; transform: translate(-50%,-100%); background: rgba(220,38,38,0.95); color: #fff; border: 2px solid #feca57; border-radius: 16px; padding: 4px 10px; font-size: 11.5px; font-weight: 800; white-space: nowrap; pointer-events: none; }
-    .police-shout { position: absolute; transform: translate(-50%,-100%); background: rgba(16,27,48,0.95); color: #fff; border: 2px solid #3b82f6; border-radius: 16px; padding: 4px 10px; font-size: 11.5px; font-weight: 800; white-space: nowrap; pointer-events: none; }
-    .moto-shout { position: absolute; transform: translate(-50%,-100%); background: rgba(192,57,43,0.96); color: #fff; border: 2px solid #feca57; border-radius: 16px; padding: 5px 11px; font-size: 12px; font-weight: 800; white-space: nowrap; pointer-events: none; box-shadow: 0 4px 12px rgba(0,0,0,0.45); }
-    .remote-tag { position: absolute; transform: translate(-50%,-100%); background: rgba(9,13,22,0.88); color: #00d2d3; border: 1.5px solid #00d2d3; border-radius: 10px; padding: 2px 8px; font-size: 11px; font-weight: 800; white-space: nowrap; pointer-events: none; }
+    .lotador-shout { position: absolute; transform: translate(-50%,-100%); background: rgba(245,185,21,0.97); color: #090d16; border: 2.5px solid #fff; border-radius: 18px; padding: 8px 15px; font-size: 16px; font-weight: 900; width: max-content; max-width: min(320px, 84vw); white-space: normal; text-align: center; line-height: 1.25; box-shadow: 0 6px 18px rgba(0,0,0,0.55); pointer-events: auto; cursor: pointer; touch-action: manipulation; }
+    .zunga-shout { position: absolute; transform: translate(-50%,-100%); background: rgba(16,172,132,0.96); color: #fff; border: 2.5px solid #feca57; border-radius: 18px; padding: 8px 14px; font-size: 15.5px; font-weight: 900; width: max-content; max-width: min(320px, 84vw); white-space: normal; text-align: center; line-height: 1.25; box-shadow: 0 6px 18px rgba(0,0,0,0.55); text-shadow: 0 1px 3px rgba(0,0,0,0.65); pointer-events: none; }
+    .marginal-shout { position: absolute; transform: translate(-50%,-100%); background: rgba(220,38,38,0.97); color: #fff; border: 2.5px solid #feca57; border-radius: 18px; padding: 8px 15px; font-size: 16px; font-weight: 900; width: max-content; max-width: min(320px, 84vw); white-space: normal; text-align: center; line-height: 1.25; box-shadow: 0 6px 18px rgba(0,0,0,0.6); text-shadow: 0 1px 3px rgba(0,0,0,0.7); pointer-events: none; }
+    .police-shout { position: absolute; transform: translate(-50%,-100%); background: rgba(16,27,48,0.97); color: #fff; border: 2.5px solid #3b82f6; border-radius: 18px; padding: 8px 15px; font-size: 16px; font-weight: 900; width: max-content; max-width: min(340px, 86vw); white-space: normal; text-align: center; line-height: 1.25; box-shadow: 0 6px 18px rgba(0,0,0,0.6); text-shadow: 0 1px 3px rgba(0,0,0,0.7); pointer-events: none; }
+    .moto-shout { position: absolute; transform: translate(-50%,-100%); background: rgba(192,57,43,0.98); color: #fff; border: 3px solid #feca57; border-radius: 18px; padding: 9px 16px; font-size: 16.5px; font-weight: 900; width: max-content; max-width: min(340px, 86vw); white-space: normal; text-align: center; line-height: 1.25; box-shadow: 0 6px 20px rgba(0,0,0,0.65); text-shadow: 0 1px 3px rgba(0,0,0,0.75); pointer-events: none; }
+    .player-shout { position: absolute; transform: translate(-50%,-100%); background: rgba(9,13,22,0.96); color: #fff; border: 3px solid #00d2d3; border-radius: 20px; padding: 9px 17px; font-size: 17px; font-weight: 900; width: max-content; max-width: min(340px, 86vw); white-space: normal; text-align: center; line-height: 1.25; box-shadow: 0 8px 24px rgba(0,210,211,0.35), 0 4px 14px rgba(0,0,0,0.65); pointer-events: none; z-index: 19; }
+    .player-shout::after { content: ''; position: absolute; left: 50%; bottom: -10px; transform: translateX(-50%); border-left: 9px solid transparent; border-right: 9px solid transparent; border-top: 10px solid #00d2d3; }
+    .remote-tag { position: absolute; transform: translate(-50%,-100%); background: rgba(9,13,22,0.92); color: #00d2d3; border: 2px solid #00d2d3; border-radius: 14px; padding: 5px 12px; font-size: 14.5px; font-weight: 900; width: max-content; max-width: min(300px, 80vw); white-space: normal; text-align: center; pointer-events: none; }
+    #player-say-box { position: fixed; bottom: 64px; left: 50%; transform: translateX(-50%); width: min(380px, 92vw); background: rgba(12,16,26,0.96); border: 2px solid #00d2d3; border-radius: 16px; padding: 10px; display: none; gap: 8px; align-items: center; z-index: 26; box-shadow: 0 12px 32px rgba(0,0,0,0.65); }
+    #player-say-input { flex: 1; background: rgba(255,255,255,0.1); border: 1.5px solid rgba(255,255,255,0.25); border-radius: 10px; padding: 9px 11px; color: #fff; font-size: 14px; outline: none; user-select: text; -webkit-user-select: text; touch-action: manipulation; }
+    #player-say-input:focus { border-color: #00d2d3; }
     #npc-bubble { position: fixed; left: 0; top: 0; transform: translate(-50%,-100%); z-index: 18; display: none; pointer-events: auto; }
     .npc-prompt { background: rgba(12,16,26,0.94); border: 1.5px solid #00d2d3; border-radius: 20px; padding: 7px 14px; font-size: 12px; color: #fff; cursor: pointer; white-space: nowrap; display: flex; align-items: center; gap: 6px; touch-action: manipulation; }
     .npc-chat-box { width: 265px; background: rgba(12,16,26,0.96); border: 1.5px solid #00d2d3; border-radius: 16px; padding: 12px; display: flex; flex-direction: column; gap: 8px; position: relative; }
@@ -86,7 +90,7 @@ html
     .npc-input-row { display: flex; gap: 6px; margin-top: 2px; }
     #chat-input { flex: 1; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; padding: 6px 8px; color: #fff; font-size: 12px; outline: none; user-select: text; -webkit-user-select: text; touch-action: manipulation; }
     .npc-send-btn { background: #00d2d3; color: #090d16; border: none; border-radius: 8px; padding: 0 10px; font-weight: 800; font-size: 12px; cursor: pointer; touch-action: manipulation; }
-    @media (max-width: 768px) { #pc-controls { display: none; } .pill { padding: 6px 9px; font-size: 11px; gap: 7px; } .money { font-size: 12px; } #shop-panel, #build-panel { top: 98px; } #toast { top: 94px; } }
+    @media (max-width: 768px) { #pc-controls { display: none; } .pill { padding: 6px 9px; font-size: 11px; gap: 7px; } .money { font-size: 12px; } #shop-panel, #build-panel { top: 98px; } #toast { top: 94px; } #player-say-box { bottom: 155px; } .lotador-shout, .zunga-shout, .marginal-shout, .police-shout, .moto-shout, .player-shout { font-size: 14.5px; padding: 7px 13px; } }
   </style>
 </head>
 <body>
@@ -126,11 +130,12 @@ html
   </div>
   <div id="hud">
     <div class="pill"><span id="time-ui">☀️ 12:00</span><span class="money">💵 <span id="money-ui">200</span>kz</span><span class="zone-badge" id="zone-ui">📍 Centro</span><span class="buff-badge" id="buff-ui">⚡ Energia</span><span class="gp-badge" id="gp-ui">🎮 Comando</span><span class="online-badge">👥 <span id="online-ui">1</span></span></div>
-    <div class="pill"><button class="icon-btn" id="perf-btn" onclick="togglePerfMode()">⚡ FPS</button><button class="icon-btn" onclick="openAdminModal()">🔐 Admin</button><button class="icon-btn" onclick="toggleMobileUI()">📱 Controlos</button></div>
+    <div class="pill"><button class="icon-btn" onclick="openPlayerSayBox()">💬 Comentar</button><button class="icon-btn" id="perf-btn" onclick="togglePerfMode()">⚡ FPS</button><button class="icon-btn" onclick="openAdminModal()">🔐 Admin</button><button class="icon-btn" onclick="toggleMobileUI()">📱 Controlos</button></div>
   </div>
   <div id="toast"></div><div id="lotador-calls"></div><div id="npc-bubble"></div>
-  <div id="pc-controls"><span><span class="k">WASD</span> Mover</span><span><span class="k">Espaço</span> Saltar</span><span><span class="k">Shift</span> Correr/Nitro</span><span><span class="k">E</span> Conversar</span><span><span class="k">F</span> Carro</span><span>🎮 L3 Mover • R3 Câmara • ✕ Saltar • △ Carro • ◻️ Falar</span></div>
-  <div id="mobile-ui"><div id="joystick-zone"><div id="joystick-knob"></div></div><div id="mobile-actions"><div class="m-row"><button class="m-btn" onclick="toggleCar()">🚗</button><button class="m-btn" id="btn-nitro">⚡</button></div><button class="m-btn" id="btn-jump" style="width:66px; height:66px; font-size:24px;">⬆️</button></div></div>
+  <div id="player-say-box"><input id="player-say-input" type="text" maxlength="100" placeholder="Escreve o teu comentário..." autocomplete="off" /><button class="npc-send-btn" style="padding:9px 14px;font-size:13px;" onclick="sendPlayerSay()">Mostrar</button><button class="npc-close" onclick="closePlayerSayBox()">✕</button></div>
+  <div id="pc-controls"><span><span class="k">WASD</span> Mover</span><span><span class="k">Espaço</span> Saltar</span><span><span class="k">Shift</span> Correr/Nitro</span><span><span class="k">E</span> Conversar</span><span><span class="k">T</span> Comentar</span><span><span class="k">F</span> Carro</span><span>🎮 L3 Mover • R3 Câmara • ✕ Saltar • △ Carro • ◻️ Falar</span></div>
+  <div id="mobile-ui"><div id="joystick-zone"><div id="joystick-knob"></div></div><div id="mobile-actions"><div class="m-row"><button class="m-btn" onclick="openPlayerSayBox()">💬</button><button class="m-btn" onclick="toggleCar()">🚗</button><button class="m-btn" id="btn-nitro">⚡</button></div><button class="m-btn" id="btn-jump" style="width:66px; height:66px; font-size:24px;">⬆️</button></div></div>
   <div id="build-panel"><strong style="color:#00d2d3; font-size:13px;">🏗️ Terreno Disponível</strong><button onclick="buildHere('torre')" style="background:#2e86de;">🏢 Torre Vidro (120kz)</button><button onclick="buildHere('loja')" style="background:#5f27cd;">🏪 Shopping (180kz)</button><button onclick="buildHere('parque')" style="background:#10ac84;">🌳 Parque 3D (80kz)</button></div>
   <div id="shop-panel"><strong style="color:#f5b915; font-size:13.5px;">🛒 Supermercado Arreiou</strong><span style="font-size:11px; color:#c8d6e5;">Tá Barato! Escolhe o que levar:</span><button onclick="buyArreiouItem('pao')" style="background:#d35400;"><span>🥖 Pão Quente (+Veloc.)</span><span>15kz</span></button><button onclick="buyArreiouItem('sumo')" style="background:#10ac84;"><span>🥤 Sumo (+Super Salto)</span><span>25kz</span></button><button onclick="buyArreiouItem('arroz')" style="background:#2e86de;"><span>🍚 Arroz & Feijão</span><span>60kz</span></button><button onclick="buyArreiouItem('cesta')" style="background:#8e44ad;"><span>🛒 Cesta Completa</span><span>100kz</span></button></div>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -375,9 +380,9 @@ try {
           }
         }
         for (let j = 0; j < calembaMotos.length; j++) {
-          const cm = calembaMotos[j];
-          if (Math.abs(pos.x - cm.x) < maxRange && Math.abs(pos.z - cm.z) < maxRange) {
-            const np = resolveCircleOBB(pos.x, pos.z, r, cm.x, cm.z, cm.cosA, cm.sinA, 0.72, 1.42);
+          const cm = calembaMotos[j], cmx = cm.drawX ?? cm.x, cmz = cm.drawZ ?? cm.z;
+          if (Math.abs(pos.x - cmx) < maxRange && Math.abs(pos.z - cmz) < maxRange) {
+            const np = resolveCircleOBB(pos.x, pos.z, r, cmx, cmz, cm.cosA, cm.sinA, 0.72, 1.42);
             if (np.hit) { pos = { x: np.x, z: np.z }; hit = true; }
           }
         }
@@ -566,8 +571,7 @@ try {
     calembaDustPoints = new THREE.Points(dustGeo, new THREE.PointsMaterial({ color: 0xd9a773, size: isMobilePhone ? 0.6 : 0.45, transparent: true, opacity: 0.55, depthWrite: false })); calembaDustPoints.frustumCulled = false; scene.add(calembaDustPoints);
   }
   createCalembaNeighborhood();
-
-  const MARKET_CX = -245, MARKET_CZ = 162.5;
+   const MARKET_CX = -245, MARKET_CZ = 162.5;
   function createCalembaInformalMarket() {
     const g = new THREE.Group();
     const marketFloorTex = mkTex(256, 256, ctx => { ctx.fillStyle = '#5c554c'; ctx.fillRect(0, 0, 256, 256); for (let i = 0; i < 1800; i++) { const px = ((Math.sin(i * 19.7) * 43758.5) % 1 + 1) % 1 * 256, py = ((Math.sin(i * 67.3) * 43758.5) % 1 + 1) % 1 * 256; ctx.fillStyle = i % 5 === 0 ? 'rgba(180,140,100,0.22)' : (i % 4 === 0 ? 'rgba(30,28,25,0.34)' : (i % 13 === 0 ? 'rgba(235,235,235,0.28)' : 'rgba(105,94,82,0.25)')); ctx.fillRect(px, py, 2 + (i % 4), 2 + ((i * 2) % 3)); } ctx.fillStyle = 'rgba(42,38,34,0.35)'; ctx.fillRect(0, 60, 256, 18); ctx.fillRect(90, 0, 22, 256); });
@@ -807,7 +811,7 @@ try {
     { body: 0x0c56a8, shirt: 0xffffff, skin: 0xa5694f, speed: 0.36, route: [{ x: -298, z: -133 }, { x: -298, z: 133 }, { x: -192, z: 133 }, { x: -192, z: -133 }], startWp: 2, x: -245, z: 133 },
     { body: 0x10ac84, shirt: 0xff6b81, skin: 0x9c5527, speed: 0.33, route: [{ x: -298, z: -133 }, { x: -298, z: 3.2 }, { x: -192, z: 3.2 }, { x: -192, z: -133 }], startWp: 2, x: -258, z: 3.2 },
     { body: 0xd35400, shirt: 0x70a1ff, skin: 0x8d5524, speed: 0.35, route: [{ x: -356, z: 3.2 }, { x: -298, z: 3.2 }, { x: -298, z: 133 }, { x: -192, z: 133 }, { x: -192, z: -3.2 }, { x: -356, z: -3.2 }], startWp: 4, x: -192, z: 45 },
-   { body: 0x2f3640, shirt: 0xfeca57, skin: 0xb86b35, speed: 0.34, route: [{ x: -292, z: 68 }, { x: -292, z: -68 }, { x: -198, z: -68 }, { x: -198, z: 68 }], startWp: 1, x: -292, z: 20 }
+    { body: 0x2f3640, shirt: 0xfeca57, skin: 0xb86b35, speed: 0.34, route: [{ x: -292, z: 68 }, { x: -292, z: -68 }, { x: -198, z: -68 }, { x: -198, z: 68 }], startWp: 1, x: -292, z: 20 }
   ].forEach(cfg => {
     const mesh = createMotoCalemba3D(cfg.body, cfg.shirt, cfg.skin);
     const wp = cfg.route[cfg.startWp];
@@ -815,7 +819,8 @@ try {
     mesh.position.set(cfg.x, 0.14, cfg.z);
     mesh.rotation.y = ang;
     calembaMotos.push({
-      mesh, x: cfg.x, z: cfg.z, angle: ang, cosA: Math.cos(ang), sinA: Math.sin(ang),
+      mesh, x: cfg.x, z: cfg.z, drawX: cfg.x, drawZ: cfg.z, dodge: 0,
+      angle: ang, cosA: Math.cos(ang), sinA: Math.sin(ang),
       speed: cfg.speed, route: cfg.route, routeIndex: cfg.startWp,
       blocked: false, insultUntil: 0, lastPlayerToast: 0
     });
@@ -881,6 +886,33 @@ try {
   const marginalCallElems = marginais.map(() => { const d = document.createElement('div'); d.className = 'marginal-shout'; d.style.display = 'none'; lotadorCallsEl.appendChild(d); return d; });
   const policeShoutEl = document.createElement('div'); policeShoutEl.className = 'police-shout'; policeShoutEl.style.display = 'none'; lotadorCallsEl.appendChild(policeShoutEl);
   const motoCallElems = calembaMotos.map(() => { const d = document.createElement('div'); d.className = 'moto-shout'; d.style.display = 'none'; lotadorCallsEl.appendChild(d); return d; });
+  const playerShoutEl = document.createElement('div'); playerShoutEl.className = 'player-shout'; playerShoutEl.style.display = 'none'; lotadorCallsEl.appendChild(playerShoutEl);
+  let myCommentText = '', myCommentUntil = 0;
+  window.openPlayerSayBox = () => {
+    if (!hasJoined) return;
+    const box = document.getElementById('player-say-box'), inp = document.getElementById('player-say-input');
+    if (!box || !inp) return;
+    box.style.display = 'flex';
+    Object.keys(keys).forEach(k => keys[k] = false);
+    inp.focus();
+  };
+  window.closePlayerSayBox = () => {
+    const box = document.getElementById('player-say-box'), inp = document.getElementById('player-say-input');
+    if (box) box.style.display = 'none';
+    if (inp) inp.blur();
+  };
+  window.sendPlayerSay = () => {
+    const inp = document.getElementById('player-say-input'); if (!inp || !hasJoined) return;
+    const txt = inp.value.trim(); if (!txt) return;
+    myCommentText = txt; myCommentUntil = Date.now() + 6500;
+    inp.value = ''; window.closePlayerSayBox();
+    if (isCloudMode && presenceChannel) presenceChannel.send({ type: 'broadcast', event: 'say', payload: { sessionId: mySessionId, text: txt } });
+  };
+  const pSayInp = document.getElementById('player-say-input');
+  if (pSayInp) {
+    pSayInp.addEventListener('focus', () => { Object.keys(keys).forEach(k => keys[k] = false); });
+    pSayInp.addEventListener('keydown', e => { e.stopPropagation(); if (e.key === 'Enter') window.sendPlayerSay(); if (e.key === 'Escape') window.closePlayerSayBox(); });
+  }
   const esquadraCallElems = bots.filter(b => b.isEsquadraGuard).map(b => {
     if (b.guardType === 'sentinela') {
       const gun = new THREE.Mesh(new THREE.BoxGeometry(0.10, 0.12, 0.95), mkLambert(0x111111));
@@ -905,11 +937,12 @@ try {
         const av = p.avatar || { gender: 'male', skin: 0xc66f34, shirt: 0x00c8ff };
         if (!rp) {
           const tagEl = document.createElement('div'); tagEl.className = 'remote-tag'; tagEl.innerText = p.name || 'Jogador'; lotadorCallsEl.appendChild(tagEl);
-          rp = { mesh: mkAvatarMesh(av), x: p.x, y: p.y || 0, z: p.z, tx: p.x, ty: p.y || 0, tz: p.z, try: p.ry || 0, cycle: 0, tagEl, name: p.name };
+          rp = { mesh: mkAvatarMesh(av), x: p.x, y: p.y || 0, z: p.z, tx: p.x, ty: p.y || 0, tz: p.z, try: p.ry || 0, cycle: 0, tagEl, name: p.name, commentText: '', commentUntil: 0 };
           rp.mesh.position.set(p.x, p.y || 0, p.z); remotePlayers.set(p.sessionId, rp);
         }
         rp.tx = p.x; rp.ty = p.y || 0; rp.tz = p.z; rp.try = p.ry || 0; rp.mesh.visible = !p.inCar;
       });
+      presenceChannel.on('broadcast', { event: 'say' }, ({ payload: p }) => { if (!p || p.sessionId === mySessionId) return; const rp = remotePlayers.get(p.sessionId); if (rp) { rp.commentText = p.text; rp.commentUntil = Date.now() + 6500; } });
       presenceChannel.on('broadcast', { event: 'adm_money' }, ({ payload: p }) => { if (p && p.user_key === myUserKey) { player.money = p.money; showToast(`🔐 Admin definiu o teu saldo para ${p.money}kz!`); } });
       presenceChannel.subscribe(async s => { if (s === 'SUBSCRIBED' && hasJoined) await presenceChannel.track({ sessionId: mySessionId, name: myName, zone: lastZone, joinedAt: myJoinedAt }); });
       fetchCloudAdminData();
@@ -1116,6 +1149,7 @@ try {
     const k = e.key.toLowerCase(); keys[k] = true;
     if (k === 'f') window.toggleCar();
     if (k === 'e') { if (activeChatBot) window.closeChat(); else if (nearbyBot) openChat(nearbyBot); }
+    if (k === 't') { e.preventDefault(); window.openPlayerSayBox(); }
     const gy = (player.x > ARREIOU_CX - 12.6 && player.x < ARREIOU_CX + 12.6 && player.z > ARREIOU_CZ - 9.6 && player.z < ARREIOU_CZ + 9.6) ? 0.16 : 0;
     if (e.code === 'Space' && !player.currentCar && player.y <= gy + 0.01) player.vy = Date.now() < jumpBuffUntil ? 0.48 : 0.32;
   });
@@ -1222,7 +1256,7 @@ try {
     projVec.set(wx, wy, wz); projVec.project(camera);
     if (projVec.z > 1) { if (el._vis !== false) { el.style.display = 'none'; el._vis = false; } return; }
     const sx = Math.round((projVec.x * 0.5 + 0.5) * winW), sy = Math.round((-projVec.y * 0.5 + 0.5) * winH);
-    if (sx < -120 || sx > winW + 120 || sy < -60 || sy > winH + 60) { if (el._vis !== false) { el.style.display = 'none'; el._vis = false; } return; }
+    if (sx < -220 || sx > winW + 220 || sy < -90 || sy > winH + 90) { if (el._vis !== false) { el.style.display = 'none'; el._vis = false; } return; }
     if (el._vis !== true) { el.style.display = 'block'; el._vis = true; }
     if (txt !== undefined && el._txt !== txt) { el.innerText = txt; el._txt = txt; }
     if (el._lx !== sx || el._ly !== sy) { el.style.left = sx + 'px'; el.style.top = sy + 'px'; el._lx = sx; el._ly = sy; }
@@ -1347,7 +1381,7 @@ try {
       const lx = c.x + c.sinA * 3.8, lz = c.z + c.cosA * 3.8;
       let blocked = !player.currentCar && Math.hypot(player.x - lx, player.z - lz) < 2.2;
       if (!blocked) for (let j = 0; j < drivableCars.length; j++) if (Math.hypot(drivableCars[j].x - lx, drivableCars[j].z - lz) < 3.0) { blocked = true; break; }
-      if (!blocked) for (let j = 0; j < calembaMotos.length; j++) if (Math.hypot(calembaMotos[j].x - lx, calembaMotos[j].z - lz) < 2.6) { blocked = true; break; }
+      if (!blocked) for (let j = 0; j < calembaMotos.length; j++) if (Math.hypot((calembaMotos[j].drawX ?? calembaMotos[j].x) - lx, (calembaMotos[j].drawZ ?? calembaMotos[j].z) - lz) < 2.6) { blocked = true; break; }
       if (!blocked) {
         c.x += c.vx * step60; c.z += c.vz * step60;
         if (c.z > 280) c.z = -280; if (c.z < -280) c.z = 280; if (c.x > 410) c.x = -410; if (c.x < -410) c.x = 410;
@@ -1369,7 +1403,7 @@ try {
       const isPolFrontBlocked = (nx, nz, sinA, cosA) => {
         const fx = nx + sinA * 3.4, fz = nz + cosA * 3.4;
         for (let j = 0; j < drivableCars.length; j++) if (Math.hypot(drivableCars[j].x - fx, drivableCars[j].z - fz) < 2.9) return true;
-        for (let j = 0; j < calembaMotos.length; j++) if (Math.hypot(calembaMotos[j].x - fx, calembaMotos[j].z - fz) < 2.6) return true;
+        for (let j = 0; j < calembaMotos.length; j++) if (Math.hypot((calembaMotos[j].drawX ?? calembaMotos[j].x) - fx, (calembaMotos[j].drawZ ?? calembaMotos[j].z) - fz) < 2.6) return true;
         return false;
       };
       if (policePatrol.targetMarginal) {
@@ -1413,8 +1447,28 @@ try {
         const ang = Math.atan2(dx, dz);
         m.angle = ang; m.cosA = Math.cos(ang); m.sinA = Math.sin(ang);
       }
+
+      let targetDodge = 0;
+      for (let j = 0; j < calembaMotos.length; j++) {
+        if (j === mi) continue;
+        const o = calembaMotos[j], ox = (o.drawX ?? o.x) - m.x, oz = (o.drawZ ?? o.z) - m.z;
+        const fwdO = ox * m.sinA + oz * m.cosA;
+        const latO = ox * m.cosA - oz * m.sinA;
+        const sameDir = (m.sinA * o.sinA + m.cosA * o.cosA) > 0.35;
+        if (sameDir && fwdO > -2.2 && fwdO < 9.5 && Math.abs(latO) < 1.85) {
+          targetDodge = Math.abs(latO) > 0.7 ? (latO > 0 ? -1.95 : 1.95) : (mi > j ? 1.95 : -1.95);
+          break;
+        } else if (!sameDir && fwdO > 0.2 && fwdO < 8.0 && Math.abs(latO) < 1.95) {
+          targetDodge = 1.9;
+          break;
+        }
+      }
+      m.dodge += (targetDodge - m.dodge) * Math.min(1, 0.14 * step60);
+      const curX = m.x + m.cosA * m.dodge, curZ = m.z - m.sinA * m.dodge;
+      m.drawX = curX; m.drawZ = curZ;
+
       const isInFront = (ex, ez, maxF = 6.5, maxL = 1.85) => {
-        const rx = ex - m.x, rz = ez - m.z;
+        const rx = ex - curX, rz = ez - curZ;
         const fwdD = rx * m.sinA + rz * m.cosA;
         if (fwdD <= 0.6 || fwdD >= maxF) return false;
         return Math.abs(rx * m.cosA - rz * m.sinA) < maxL;
@@ -1429,7 +1483,6 @@ try {
         if (!hitOther) for (let j = 0; j < drivableCars.length; j++) if (isInFront(drivableCars[j].x, drivableCars[j].z, 7.2, 2.05)) { hitOther = true; break; }
         if (!hitOther) for (let j = 0; j < traffic.length; j++) if (isInFront(traffic[j].x, traffic[j].z, 7.2, 2.05)) { hitOther = true; break; }
         if (!hitOther && isInFront(policePatrol.x, policePatrol.z, 7.4, 2.05)) hitOther = true;
-        if (!hitOther) for (let j = 0; j < calembaMotos.length; j++) if (j !== mi && isInFront(calembaMotos[j].x, calembaMotos[j].z, 4.5, 1.5)) { hitOther = true; break; }
       }
       m.blocked = hitPlayer || hitOther;
       if (m.blocked) {
@@ -1446,7 +1499,7 @@ try {
         }
       }
       if (vis) {
-        m.mesh.position.set(m.x, 0.14, m.z);
+        m.mesh.position.set(curX, 0.14, curZ);
         m.mesh.rotation.y = m.angle;
         if (m.mesh.userData.hlMat) m.mesh.userData.hlMat.color.setHex((m.blocked && Math.floor(nowPerf / 140) % 2 === 0) ? 0xffffff : 0xfff5c0);
         if (!m.blocked && m.mesh.userData.wheels) {
@@ -1612,8 +1665,14 @@ try {
 
     remotePlayers.forEach(rp => {
       if (!hasJoined || !rp.mesh.visible || Math.hypot(player.x - rp.x, player.z - rp.z) > 65) hideTag(rp.tagEl);
-      else placeTag(rp.tagEl, rp.x, rp.y + 3.0, rp.z);
+      else {
+        const hasMsg = rp.commentText && now < rp.commentUntil;
+        placeTag(rp.tagEl, rp.x, rp.y + 3.25, rp.z, hasMsg ? `${rp.name}: "${rp.commentText}"` : rp.name);
+      }
     });
+
+    if (!hasJoined || !myCommentText || now >= myCommentUntil) hideTag(playerShoutEl);
+    else placeTag(playerShoutEl, player.x, player.y + (player.currentCar ? 3.25 : 3.45), player.z, myCommentText);
 
     lotadorCallElems.forEach((el, idx) => {
       const b = bots[idx], dL = Math.hypot(player.x - b.x, player.z - b.z);
@@ -1636,9 +1695,9 @@ try {
     });
 
     calembaMotos.forEach((m, i) => {
-      const el = motoCallElems[i], dM = Math.hypot(player.x - m.x, player.z - m.z);
+      const el = motoCallElems[i], mx = m.drawX ?? m.x, mz = m.drawZ ?? m.z, dM = Math.hypot(player.x - mx, player.z - mz);
       if (!hasJoined || dM > 45 || now > m.insultUntil) hideTag(el);
-      else placeTag(el, m.x, 2.75, m.z, '🤬 Sai da frente caralho, queres me trazer azar!');
+      else placeTag(el, mx, 3.05, mz, '🤬 Sai da frente caralho, queres me trazer azar!');
     });
 
     {
