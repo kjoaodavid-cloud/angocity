@@ -243,7 +243,8 @@ try {
   const kilambaWallMat = new THREE.MeshLambertMaterial({ map: mkTex(256, 512, ctx => { ctx.fillStyle = '#f2e8cf'; ctx.fillRect(0, 0, 256, 422); ctx.fillStyle = '#e1b12c'; ctx.fillRect(0, 0, 24, 422); ctx.fillRect(232, 0, 24, 422); ctx.fillStyle = '#5c4033'; ctx.fillRect(0, 422, 256, 90); ctx.fillStyle = '#3d2920'; ctx.fillRect(0, 420, 256, 5); for (let y = 20; y < 420; y += 34) { ctx.fillStyle = 'rgba(0,0,0,0.06)'; ctx.fillRect(24, y, 208, 2); } for (let y = 28; y < 405; y += 34) for (let x = 36; x < 210; x += 34) { ctx.fillStyle = '#2d3436'; ctx.fillRect(x, y, 22, 20); ctx.fillStyle = '#74b9ff'; ctx.fillRect(x + 2, y + 2, 8, 16); ctx.fillRect(x + 12, y + 2, 8, 16); } for (let x = 22; x < 225; x += 38) { ctx.fillStyle = '#2b1d17'; ctx.fillRect(x, 444, 24, 38); ctx.fillStyle = '#485460'; ctx.fillRect(x + 3, 447, 18, 22); } }) });
   const kilambaRoofMat = new THREE.MeshLambertMaterial({ color: 0xc86d3b }), kilambaBalconyMat = new THREE.MeshLambertMaterial({ color: 0xeab543 }), kilambaRailMat = new THREE.MeshLambertMaterial({ color: 0x3b2f2f });
 
-  const ARREIOU_CX = -26, ARREIOU_CZ = -26, solidBoxes = [];
+  const ARREIOU_CX = -26, ARREIOU_CZ = -26, solidBoxes = [], solidCircles = [], staticVehicles = [];
+  const addSolidBox = (cx, cz, w, d) => solidBoxes.push({ minX: cx - w / 2, maxX: cx + w / 2, minZ: cz - d / 2, maxZ: cz + d / 2 });
   let arreiouDoorL = null, arreiouDoorR = null, doorOpenFactor = 0;
   function createArreiouSupermarket(x, z) {
     const g = new THREE.Group(), w = 26, h = 11, d = 20, mO = new THREE.MeshLambertMaterial({ color: 0x5a6065 }), mI = new THREE.MeshLambertMaterial({ color: 0xf7f9f9 }), mR = new THREE.MeshLambertMaterial({ color: 0xf5b915 }), mC = new THREE.MeshLambertMaterial({ color: 0xe5e8e8 });
@@ -288,7 +289,64 @@ try {
     if (dSq < r * r) { const dist = Math.sqrt(dSq); if (dist > 0.0001) { const ov = r - dist; return { x: x + (dx / dist) * ov, z: z + (dz / dist) * ov }; } const pL = Math.abs(x - box.minX), pR = Math.abs(box.maxX - x), pT = Math.abs(z - box.minZ), pB = Math.abs(box.maxZ - z), m = Math.min(pL, pR, pT, pB); if (m === pL) return { x: box.minX - r, z }; if (m === pR) return { x: box.maxX + r, z }; if (m === pT) return { x, z: box.minZ - r }; return { x, z: box.maxZ + r }; }
     return { x, z };
   }
-  const applySolidCollisions = (x, z, r) => { let pos = { x, z }; for (let i = 0; i < 2; i++) for (const b of solidBoxes) pos = resolveCircleAABB(pos.x, pos.z, r, b); return pos; };
+  function resolveCircleCircle(x, z, r, c) {
+    const dx = x - c.x, dz = z - c.z, minD = r + c.r, dSq = dx * dx + dz * dz;
+    if (dSq < minD * minD) { const dist = Math.sqrt(dSq); if (dist > 0.0001) { const ov = minD - dist; return { x: x + (dx / dist) * ov, z: z + (dz / dist) * ov }; } return { x: x + minD, z }; }
+    return { x, z };
+  }
+  function resolveCircleOBB(x, z, r, vx, vz, angle, halfW, halfL) {
+    const cosA = Math.cos(angle), sinA = Math.sin(angle), dx = x - vx, dz = z - vz;
+    const lx = dx * cosA - dz * sinA, lz = dx * sinA + dz * cosA;
+    const cx = Math.max(-halfW, Math.min(halfW, lx)), cz = Math.max(-halfL, Math.min(halfL, lz));
+    const ox = lx - cx, oz = lz - cz, dSq = ox * ox + oz * oz;
+    if (dSq < r * r) {
+      let plx = 0, plz = 0; const dist = Math.sqrt(dSq);
+      if (dist > 0.0001) { const ov = r - dist; plx = (ox / dist) * ov; plz = (oz / dist) * ov; }
+      else {
+        const pL = Math.abs(lx + halfW), pR = Math.abs(halfW - lx), pT = Math.abs(lz + halfL), pB = Math.abs(halfL - lz), m = Math.min(pL, pR, pT, pB);
+        if (m === pL) plx = -(lx + halfW + r); else if (m === pR) plx = (halfW - lx + r); else if (m === pT) plz = -(lz + halfL + r); else plz = (halfL - lz + r);
+      }
+      return { x: x + plx * cosA + plz * sinA, z: z - plx * sinA + plz * cosA, hit: true };
+    }
+    return { x, z, hit: false };
+  }
+  function applySolidCollisions(x, z, r, opts = {}) {
+    let pos = { x, z }, hit = false;
+    const skipCar = opts.skipCar || null, checkVehicles = opts.vehicles !== false;
+    for (let i = 0; i < 2; i++) {
+      for (const b of solidBoxes) {
+        if (pos.x + r > b.minX && pos.x - r < b.maxX && pos.z + r > b.minZ && pos.z - r < b.maxZ) {
+          const np = resolveCircleAABB(pos.x, pos.z, r, b);
+          if (np.x !== pos.x || np.z !== pos.z) { pos = np; hit = true; }
+        }
+      }
+      for (const c of solidCircles) {
+        const dx = pos.x - c.x, dz = pos.z - c.z, md = r + c.r;
+        if (dx * dx + dz * dz < md * md) {
+          const np = resolveCircleCircle(pos.x, pos.z, r, c);
+          if (np.x !== pos.x || np.z !== pos.z) { pos = np; hit = true; }
+        }
+      }
+      if (checkVehicles) {
+        for (const sv of staticVehicles) {
+          const np = resolveCircleOBB(pos.x, pos.z, r, sv.x, sv.z, sv.angle, sv.hw, sv.hl);
+          if (np.hit) { pos = { x: np.x, z: np.z }; hit = true; }
+        }
+        for (const dc of drivableCars) {
+          if (dc === skipCar) continue;
+          const np = resolveCircleOBB(pos.x, pos.z, r, dc.x, dc.z, dc.angle, dc.hw || 1.15, dc.hl || 2.35);
+          if (np.hit) { pos = { x: np.x, z: np.z }; hit = true; }
+        }
+        for (const tc of traffic) {
+          const np = resolveCircleOBB(pos.x, pos.z, r, tc.x, tc.z, tc.angle, tc.hw || 1.15, tc.hl || 2.45);
+          if (np.hit) { pos = { x: np.x, z: np.z }; hit = true; }
+        }
+        const npPol = resolveCircleOBB(pos.x, pos.z, r, policePatrol.x, policePatrol.z, policePatrol.angle, 1.15, 2.85);
+        if (npPol.hit) { pos = { x: npPol.x, z: npPol.z }; hit = true; }
+      }
+    }
+    return opts.returnHit ? { x: pos.x, z: pos.z, hit } : pos;
+  }
   const ROAD_XS = [-295, -195, -130, -65, 0, 65, 130, 200, 290, 380], ROAD_ZS = [-195, -130, -65, 0, 65, 130, 195];
   function isOnRoad(x, z) { for (const rx of ROAD_XS) if (Math.abs(x - rx) <= 7.5 && Math.abs(z) <= 270) return true; for (const rz of ROAD_ZS) if (Math.abs(z - rz) <= 7.5 && Math.abs(x) <= 425) return true; return false; }
 
@@ -304,13 +362,14 @@ try {
   mkBox(scene, 24, 0.16, 24, new THREE.MeshLambertMaterial({ color: 0xdcdde1 }), 22, 0.08, 22, false, true);
   const fb = new THREE.Mesh(new THREE.CylinderGeometry(4, 4.5, 0.8, isMobilePhone ? 12 : 24), mkMat(0x7f8fa6)); fb.position.set(22, 0.5, 22); scene.add(fb);
   const fw = new THREE.Mesh(new THREE.CylinderGeometry(3.4, 3.4, 0.9, isMobilePhone ? 12 : 24), mkMat(0x00d2d3, { shininess: 100 })); fw.position.set(22, 0.55, 22); scene.add(fw);
+  solidCircles.push({ x: 22, z: 22, r: 4.5 });
 
-  const createSkyscraper = (x, z, w, h, d, tex) => mkBox(scene, w, h, d, new THREE.MeshLambertMaterial({ map: tex }), x, h / 2, z, true, true);
+  const createSkyscraper = (x, z, w, h, d, tex) => { addSolidBox(x, z, w, d); return mkBox(scene, w, h, d, new THREE.MeshLambertMaterial({ map: tex }), x, h / 2, z, true, true); };
   [[28,-28,20,58,18,glassTex2],[-28,28,18,38,20,glassTex3],[44,44,22,66,22,glassTex1],[-95,-28,20,50,20,glassTex2],[95,-28,18,40,22,glassTex3],[-95,28,22,54,18,glassTex1],[95,32,20,46,20,glassTex2],[-30,-95,20,48,20,glassTex1],[30,-95,22,64,20,glassTex3],[-95,-95,20,44,18,glassTex2],[95,-95,22,58,20,glassTex1],[-95,95,22,52,20,glassTex3],[95,95,20,48,22,glassTex2],[-160,-30,20,56,20,glassTex1],[-160,30,20,42,22,glassTex2],[-160,-95,22,60,18,glassTex3],[-160,95,18,46,20,glassTex1],[30,-160,22,50,20,glassTex2],[-30,-160,20,62,22,glassTex1],[95,-160,20,44,20,glassTex3],[-95,-160,22,54,18,glassTex2],[-30,160,20,48,20,glassTex3],[95,160,22,56,20,glassTex1]].forEach(b => createSkyscraper(...b));
 
   const trunkMat = new THREE.MeshLambertMaterial({ color: 0x6d4c41 }), leafMat1 = new THREE.MeshLambertMaterial({ color: 0x10ac84 }), leafMat2 = new THREE.MeshLambertMaterial({ color: 0x1dd1a1 });
   const trunkGeo = new THREE.CylinderGeometry(0.32, 0.42, 2.4, isMobilePhone ? 6 : 8), leafGeo1 = new THREE.SphereGeometry(1.8, isMobilePhone ? 7 : 10, isMobilePhone ? 6 : 10), leafGeo2 = new THREE.SphereGeometry(1.3, isMobilePhone ? 6 : 10, isMobilePhone ? 6 : 10);
-  function createTree(x, z) { const g = new THREE.Group(), tr = new THREE.Mesh(trunkGeo, trunkMat); tr.position.y = 1.2; const l1 = new THREE.Mesh(leafGeo1, leafMat1); l1.position.y = 3.2; const l2 = new THREE.Mesh(leafGeo2, leafMat2); l2.position.y = 4.3; if (!isMobilePhone) { tr.castShadow = l1.castShadow = true; } g.add(tr, l1, l2); g.position.set(x, 0, z); scene.add(g); }
+  function createTree(x, z) { const g = new THREE.Group(), tr = new THREE.Mesh(trunkGeo, trunkMat); tr.position.y = 1.2; const l1 = new THREE.Mesh(leafGeo1, leafMat1); l1.position.y = 3.2; const l2 = new THREE.Mesh(leafGeo2, leafMat2); l2.position.y = 4.3; if (!isMobilePhone) { tr.castShadow = l1.castShadow = true; } g.add(tr, l1, l2); g.position.set(x, 0, z); scene.add(g); solidCircles.push({ x, z, r: 0.55 }); }
   [[-12,12],[45,-14],[-45,14],[14,45],[-14,-45],[-78,-78],[78,-78],[-78,78],[78,78],[-145,14],[-145,-14]].forEach(t => createTree(t[0], t[1]));
 
   const balconyGeo = new THREE.BoxGeometry(2.3, 2.2, 3.6), railGeo = new THREE.BoxGeometry(1.4, 0.9, 2.8);
@@ -325,6 +384,7 @@ try {
       const cb = new THREE.Mesh(balconyGeo, kilambaBalconyMat); cb.position.set(fx, by, 0); g.add(cb);
     }
     g.position.set(x, 0, z); scene.add(g);
+    addSolidBox(x, z, w, d);
   }
   const flowerPurpleMat = new THREE.MeshLambertMaterial({ color: 0x6c3483 }), flowerYellowMat = new THREE.MeshLambertMaterial({ color: 0xf1c40f }), poleMat = new THREE.MeshLambertMaterial({ color: 0x535c68 }), lampHeadMat = new THREE.MeshBasicMaterial({ color: 0xfff5c0 }), pathMat = new THREE.MeshLambertMaterial({ color: 0xd5dbdb });
   function createStreetLamp(x, z) { const g = new THREE.Group(), pole = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.16, 6.2, 6), poleMat); pole.position.y = 3.1; g.add(pole); mkBox(g, 0.14, 0.14, 1.3, poleMat, 0, 6.1, 0.55); mkBox(g, 0.35, 0.15, 0.55, lampHeadMat, 0, 6.02, 1.05); g.position.set(x, 0, z); scene.add(g); }
@@ -340,6 +400,7 @@ try {
     mkBox(g, 1.4, 9.5, 1.4, pMat, 0, 4.75, -10, true); mkBox(g, 1.4, 9.5, 1.4, pMat, 0, 4.75, 10, true);
     const sMat = new THREE.MeshLambertMaterial({ map: mkTex(512, 128, ctx => { ctx.fillStyle = '#5c4033'; ctx.fillRect(0, 0, 512, 128); ctx.strokeStyle = '#eab543'; ctx.lineWidth = 8; ctx.strokeRect(4, 4, 504, 120); ctx.fillStyle = '#f2e8cf'; ctx.font = 'bold 30px Arial, sans-serif'; ctx.textAlign = 'center'; ctx.fillText('CENTRALIDADE DO KILAMBA', 256, 62); ctx.fillStyle = '#eab543'; ctx.font = 'bold 20px Arial, sans-serif'; ctx.fillText('LUANDA • ANGOLA', 256, 98); }) }), ssMat = new THREE.MeshLambertMaterial({ color: 0x5c4033 });
     mkBox(g, 1.8, 3.8, 21.4, [sMat, sMat, ssMat, ssMat, ssMat, ssMat], 0, 9.2, 0, true); g.position.set(x, 0, z); scene.add(g);
+    addSolidBox(x, z - 10, 1.5, 1.5); addSolidBox(x, z + 10, 1.5, 1.5);
   }
   createKilambaSign(172, 0);
 
@@ -361,6 +422,9 @@ try {
     const flag1 = new THREE.Mesh(new THREE.PlaneGeometry(10, 5), new THREE.MeshLambertMaterial({ map: unitTex, side: THREE.DoubleSide })); flag1.position.set(-5.8, 19.0, 29); g.add(flag1);
     const flag2 = new THREE.Mesh(new THREE.PlaneGeometry(10, 5), new THREE.MeshLambertMaterial({ map: angolaTex, side: THREE.DoubleSide })); flag2.position.set(16.2, 19.0, 29); g.add(flag2);
     g.position.set(x, 0, z); scene.add(g);
+    addSolidBox(x, z, 44, 32);
+    addSolidBox(x - 7.5, z + 20.5, 0.8, 0.8);
+    addSolidBox(x + 7.5, z + 20.5, 0.8, 0.8);
   }
   createHealthUnit(160, 95);
 
@@ -376,6 +440,7 @@ try {
     mkBox(g, 1.4, 9.5, 1.4, pMat, 0, 4.75, -10, true); mkBox(g, 1.4, 9.5, 1.4, pMat, 0, 4.75, 10, true);
     const sMat = new THREE.MeshLambertMaterial({ map: mkTex(512, 128, ctx => { ctx.fillStyle = '#3b2e26'; ctx.fillRect(0, 0, 512, 128); ctx.strokeStyle = '#a04000'; ctx.lineWidth = 8; ctx.strokeRect(4, 4, 504, 120); ctx.fillStyle = '#f2e8cf'; ctx.font = 'bold 48px Arial, sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText('CALEMBA 2', 256, 66); }) }), ssMat = new THREE.MeshLambertMaterial({ color: 0x3b2e26 });
     mkBox(g, 1.8, 3.8, 21.4, [sMat, sMat, ssMat, ssMat, ssMat, ssMat], 0, 9.2, 0, true); g.position.set(x, 0, z); scene.add(g);
+    addSolidBox(x, z - 10, 1.5, 1.5); addSolidBox(x, z + 10, 1.5, 1.5);
   }
 
   function createCalembaNeighborhood() {
@@ -387,7 +452,7 @@ try {
     createCalembaSign(-172, 0);
     const mudBankMat = new THREE.MeshLambertMaterial({ color: 0x4d331d }), murkyWaterMat = mkMat(0x3e4d23, { shininess: 90, transparent: true, opacity: 0.90 });
     [{ x: -335, z: -54, len: 56 }, { x: -245, z: -54, len: 74 }, { x: -245, z: 56, len: 70 }].forEach(d => { mkBox(scene, d.len, 0.06, 4.2, mudBankMat, d.x, 0.03, d.z); const wt = new THREE.Mesh(new THREE.PlaneGeometry(d.len - 1.5, 2.6), murkyWaterMat); wt.rotation.x = -Math.PI / 2; wt.position.set(d.x, 0.065, d.z); scene.add(wt); });
-    const addLM = (lx, lz, w, h, d, wh, rh, lbl, raw) => { const g = new THREE.Group(); mkBox(g, w, h, d, new THREE.MeshLambertMaterial({ map: calembaHouseTex(wh, raw) }), 0, h / 2, 0, true, true); mkBox(g, w + 0.8, 0.5, d + 0.8, new THREE.MeshLambertMaterial({ map: zincRoofTex(rh, 'rgba(0,0,0,0.2)', 'rgba(110,50,18,0.55)') }), 0, h + 0.25, 0).rotation.x = 0.08; if (lbl) { const s = new THREE.Mesh(new THREE.PlaneGeometry(w * 0.7, 1.4), new THREE.MeshBasicMaterial({ map: mkTex(256, 64, ctx => { ctx.fillStyle = '#d4ac0d'; ctx.fillRect(0, 0, 256, 64); ctx.fillStyle = '#2d3436'; ctx.font = 'bold 24px Arial, sans-serif'; ctx.textAlign = 'center'; ctx.fillText(lbl, 128, 42); }) })); s.position.set(0, h - 0.8, d / 2 + 0.06); g.add(s); } g.position.set(lx, 0, lz); scene.add(g); };
+    const addLM = (lx, lz, w, h, d, wh, rh, lbl, raw) => { const g = new THREE.Group(); mkBox(g, w, h, d, new THREE.MeshLambertMaterial({ map: calembaHouseTex(wh, raw) }), 0, h / 2, 0, true, true); mkBox(g, w + 0.8, 0.5, d + 0.8, new THREE.MeshLambertMaterial({ map: zincRoofTex(rh, 'rgba(0,0,0,0.2)', 'rgba(110,50,18,0.55)') }), 0, h + 0.25, 0).rotation.x = 0.08; if (lbl) { const s = new THREE.Mesh(new THREE.PlaneGeometry(w * 0.7, 1.4), new THREE.MeshBasicMaterial({ map: mkTex(256, 64, ctx => { ctx.fillStyle = '#d4ac0d'; ctx.fillRect(0, 0, 256, 64); ctx.fillStyle = '#2d3436'; ctx.font = 'bold 24px Arial, sans-serif'; ctx.textAlign = 'center'; ctx.fillText(lbl, 128, 42); }) })); s.position.set(0, h - 0.8, d / 2 + 0.06); g.add(s); } g.position.set(lx, 0, lz); scene.add(g); addSolidBox(lx, lz, w, d); };
     addLM(-314, -34, 12, 7.2, 10, '#cfd4d8', '#7f8c8d', null, true); addLM(-352, -24, 11, 6.8, 9, '#d9c27e', '#7c4322', null, false);
     addLM(-268, 28, 16, 4.8, 9, '#c7bfb5', '#8a3329', 'ESCOLA CALEMBA 2', true); addLM(-244, -20, 10, 4.2, 8, '#d4b499', '#6e472b', 'CANTINA CALEMBA 2', false);
     const lms = [{ x: -314, z: -34 }, { x: -352, z: -24 }, { x: -268, z: 28 }, { x: -244, z: -20 }];
@@ -396,6 +461,7 @@ try {
     const lots = []; let idxS = 1;
     for (let gx = -362; gx <= -184; gx += 15) for (let gz = -118; gz <= 118; gz += 14) { const cx = gx + (pr(idxS++) - 0.5) * 4.2, cz = gz + (pr(idxS++) - 0.5) * 3.6; if (!isClear(cx, cz)) continue; const r1 = pr(idxS++), r2 = pr(idxS++), r3 = pr(idxS++), r4 = pr(idxS++); lots.push({ x: cx, z: cz, w: 4.8 + r1 * 2.8, d: 4.2 + r2 * 2.4, h: r3 > 0.92 ? (5.6 + r4) : (2.5 + r4 * 0.9), rotY: (Math.floor(r1 * 4) * Math.PI) / 2 + (r2 - 0.5) * 0.1, wallType: Math.floor(r2 * 4), roofType: Math.floor(r3 * 4), hasTree: r4 > 0.62, isPalm: r1 > 0.72, hasPuddle: r2 > 0.35, hasTrash: r3 > 0.30, seed: r1 + r2 + r3 + r4 }); }
     if (!lots.length) return;
+    lots.forEach(l => { const sw = Math.abs(Math.sin(l.rotY)) > 0.707; addSolidBox(l.x, l.z, sw ? l.d : l.w, sw ? l.w : l.d); });
     const wallMats = ['#a8a29a', '#d6cab8', '#c9a684', '#8f8b85'].map((c, i) => new THREE.MeshLambertMaterial({ map: calembaHouseTex(c, i === 0 || i === 3) }));
     const roofMats = [['#767e82','#4c5458','rgba(122,58,20,0.65)'],['#7c4322','#4d2812','rgba(60,30,12,0.55)'],['#8a3329','#5a1e16','rgba(110,55,22,0.60)'],['#8d7c68','#5e5042','rgba(128,62,24,0.60)']].map(a => new THREE.MeshLambertMaterial({ map: zincRoofTex(...a) }));
     const unitBox = new THREE.BoxGeometry(1, 1, 1), wB = [[],[],[],[]], rB = [[],[],[],[]], dummy = new THREE.Object3D();
@@ -413,8 +479,8 @@ try {
     const trLots = lots.filter(l => l.hasTrash);
     if (trLots.length) { const tIM = new THREE.InstancedMesh(new THREE.DodecahedronGeometry(0.6, 0), new THREE.MeshLambertMaterial({ color: 0x5c5346 }), trLots.length), tireIM = new THREE.InstancedMesh(new THREE.TorusGeometry(0.36, 0.14, 5, 9), new THREE.MeshLambertMaterial({ color: 0x1b1d1f }), trLots.length * 2), dIM = new THREE.InstancedMesh(new THREE.CylinderGeometry(0.35, 0.35, 0.92, 6), new THREE.MeshLambertMaterial({ color: 0x8a4321 }), trLots.length); tIM.frustumCulled = tireIM.frustumCulled = dIM.frustumCulled = false; let ti = 0; trLots.forEach((l, i) => { const tx = l.x - Math.cos(l.rotY) * (l.w / 2 + 2), tz = l.z + Math.sin(l.rotY) * (l.d / 2 + 1.8); dummy.position.set(tx, 0.28, tz); dummy.rotation.set(0.2, l.seed, 0.1); dummy.scale.set(1.5, 0.65, 1.2); dummy.updateMatrix(); tIM.setMatrixAt(i, dummy.matrix); dummy.position.set(tx + 0.8, 0.14, tz + 0.4); dummy.rotation.set(Math.PI / 2, 0, 0); dummy.scale.set(1, 1, 1); dummy.updateMatrix(); tireIM.setMatrixAt(ti++, dummy.matrix); dummy.position.set(l.x, l.h + 0.38, l.z); dummy.rotation.set(Math.PI / 2 + 0.1, 0, 0); dummy.scale.set(0.9, 0.9, 0.9); dummy.updateMatrix(); tireIM.setMatrixAt(ti++, dummy.matrix); dummy.position.set(tx - 0.6, 0.46, tz - 0.7); dummy.rotation.set(0, 0, i % 3 === 0 ? 0.15 : 0); dummy.scale.set(1, 1, 1); dummy.updateMatrix(); dIM.setMatrixAt(i, dummy.matrix); }); tIM.instanceMatrix.needsUpdate = dIM.instanceMatrix.needsUpdate = true; tireIM.count = ti; tireIM.instanceMatrix.needsUpdate = true; scene.add(tIM, tireIM, dIM); }
     const dLeafM = new THREE.MeshLambertMaterial({ color: 0x5c6b32 }), dPalmM = new THREE.MeshLambertMaterial({ color: 0x4b632c }), tLots = lots.filter(l => l.hasTree && !l.isPalm), pmLots = lots.filter(l => l.hasTree && l.isPalm);
-    if (tLots.length) { const trIM = new THREE.InstancedMesh(trunkGeo, trunkMat, tLots.length), lfIM = new THREE.InstancedMesh(leafGeo1, dLeafM, tLots.length); trIM.frustumCulled = lfIM.frustumCulled = false; tLots.forEach((l, i) => { const tx = l.x + Math.cos(l.rotY) * (l.w / 2 + 1.1), tz = l.z + Math.sin(l.rotY) * (l.d / 2 + 0.8); dummy.position.set(tx, 1.2, tz); dummy.rotation.set(0, 0, 0); dummy.scale.set(0.85, 1, 0.85); dummy.updateMatrix(); trIM.setMatrixAt(i, dummy.matrix); dummy.position.set(tx, 3.2, tz); dummy.scale.set(0.95, 0.88, 0.95); dummy.updateMatrix(); lfIM.setMatrixAt(i, dummy.matrix); }); trIM.instanceMatrix.needsUpdate = lfIM.instanceMatrix.needsUpdate = true; scene.add(trIM, lfIM); }
-    if (pmLots.length) { const pTrIM = new THREE.InstancedMesh(new THREE.CylinderGeometry(0.18, 0.3, 5.2, 6), trunkMat, pmLots.length), pTpIM = new THREE.InstancedMesh(new THREE.ConeGeometry(2.1, 1.5, 6), dPalmM, pmLots.length); pTrIM.frustumCulled = pTpIM.frustumCulled = false; pmLots.forEach((l, i) => { const px = l.x - Math.cos(l.rotY) * (l.w / 2 + 1.0), pz = l.z + Math.sin(l.rotY) * (l.d / 2 + 0.8); dummy.position.set(px, 2.6, pz); dummy.rotation.set(0.08, 0, 0.06); dummy.scale.set(1, 1, 1); dummy.updateMatrix(); pTrIM.setMatrixAt(i, dummy.matrix); dummy.position.set(px + 0.18, 5.3, pz + 0.18); dummy.rotation.set(0, i * 0.7, 0); dummy.scale.set(1, 1, 1); dummy.updateMatrix(); pTpIM.setMatrixAt(i, dummy.matrix); }); pTrIM.instanceMatrix.needsUpdate = pTpIM.instanceMatrix.needsUpdate = true; scene.add(pTrIM, pTpIM); }
+    if (tLots.length) { const trIM = new THREE.InstancedMesh(trunkGeo, trunkMat, tLots.length), lfIM = new THREE.InstancedMesh(leafGeo1, dLeafM, tLots.length); trIM.frustumCulled = lfIM.frustumCulled = false; tLots.forEach((l, i) => { const tx = l.x + Math.cos(l.rotY) * (l.w / 2 + 1.1), tz = l.z + Math.sin(l.rotY) * (l.d / 2 + 0.8); solidCircles.push({ x: tx, z: tz, r: 0.45 }); dummy.position.set(tx, 1.2, tz); dummy.rotation.set(0, 0, 0); dummy.scale.set(0.85, 1, 0.85); dummy.updateMatrix(); trIM.setMatrixAt(i, dummy.matrix); dummy.position.set(tx, 3.2, tz); dummy.scale.set(0.95, 0.88, 0.95); dummy.updateMatrix(); lfIM.setMatrixAt(i, dummy.matrix); }); trIM.instanceMatrix.needsUpdate = lfIM.instanceMatrix.needsUpdate = true; scene.add(trIM, lfIM); }
+    if (pmLots.length) { const pTrIM = new THREE.InstancedMesh(new THREE.CylinderGeometry(0.18, 0.3, 5.2, 6), trunkMat, pmLots.length), pTpIM = new THREE.InstancedMesh(new THREE.ConeGeometry(2.1, 1.5, 6), dPalmM, pmLots.length); pTrIM.frustumCulled = pTpIM.frustumCulled = false; pmLots.forEach((l, i) => { const px = l.x - Math.cos(l.rotY) * (l.w / 2 + 1.0), pz = l.z + Math.sin(l.rotY) * (l.d / 2 + 0.8); solidCircles.push({ x: px, z: pz, r: 0.4 }); dummy.position.set(px, 2.6, pz); dummy.rotation.set(0.08, 0, 0.06); dummy.scale.set(1, 1, 1); dummy.updateMatrix(); pTrIM.setMatrixAt(i, dummy.matrix); dummy.position.set(px + 0.18, 5.3, pz + 0.18); dummy.rotation.set(0, i * 0.7, 0); dummy.scale.set(1, 1, 1); dummy.updateMatrix(); pTpIM.setMatrixAt(i, dummy.matrix); }); pTrIM.instanceMatrix.needsUpdate = pTpIM.instanceMatrix.needsUpdate = true; scene.add(pTrIM, pTpIM); }
     const dustCount = isMobilePhone ? 150 : 550, dustPos = new Float32Array(dustCount * 3); calembaDustSpeeds = new Float32Array(dustCount * 2);
     for (let i = 0; i < dustCount; i++) { dustPos[i * 3] = -370 + Math.random() * 196; dustPos[i * 3 + 1] = 0.25 + Math.random() * 8.2; dustPos[i * 3 + 2] = -126 + Math.random() * 252; calembaDustSpeeds[i * 2] = 0.03 + Math.random() * 0.06; calembaDustSpeeds[i * 2 + 1] = (Math.random() - 0.5) * 0.03; }
     const dustGeo = new THREE.BufferGeometry(); dustGeo.setAttribute('position', new THREE.BufferAttribute(dustPos, 3));
@@ -436,7 +502,7 @@ try {
     const roughBlockTex = mkTex(256, 128, ctx => { ctx.fillStyle = '#7f8487'; ctx.fillRect(0, 0, 256, 128); ctx.strokeStyle = '#4f5457'; ctx.lineWidth = 2; for (let y = 0; y < 128; y += 16) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(256, y); ctx.stroke(); for (let x = (y % 32 === 0 ? 0 : 16); x < 256; x += 32) { ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x, y + 16); ctx.stroke(); } } for (let i = 0; i < 400; i++) { ctx.fillStyle = i % 2 === 0 ? 'rgba(30,30,30,0.18)' : 'rgba(220,220,220,0.15)'; ctx.fillRect((i * 47) % 256, (i * 29) % 128, 4, 3); } });
     const blockWallMat = new THREE.MeshLambertMaterial({ map: roughBlockTex }), metalPostMat = new THREE.MeshLambertMaterial({ color: 0x222629 }), darkZincMat = new THREE.MeshLambertMaterial({ map: zincRoofTex('#2d3136', '#1c1f22', 'rgba(95,46,20,0.55)'), side: THREE.DoubleSide });
     mkBox(g, 52, 5.2, 0.65, blockWallMat, -4, 2.6, 23, true, true); mkBox(g, 0.65, 5.2, 16, blockWallMat, 22, 2.6, 15, true, true); mkBox(g, 24, 4.6, 0.55, blockWallMat, 10, 2.3, 12, true, true);
-    [-29, -20, -11, -2, 7, 16, 22].forEach(px => { mkBox(g, 0.42, 7.2, 0.42, metalPostMat, px, 3.6, 7.5, true); mkBox(g, 0.42, 6.2, 0.42, metalPostMat, px, 3.1, 22.8, true); });
+    [-29, -20, -11, -2, 7, 16, 22].forEach(px => { mkBox(g, 0.42, 7.2, 0.42, metalPostMat, px, 3.6, 7.5, true); mkBox(g, 0.42, 6.2, 0.42, metalPostMat, px, 3.1, 22.8, true); addSolidBox(MARKET_CX + px, MARKET_CZ + 7.5, 0.5, 0.5); });
     const roofLeft = new THREE.Mesh(new THREE.BoxGeometry(28, 0.25, 18.5), darkZincMat); roofLeft.position.set(-16.5, 7.7, 15.2); roofLeft.rotation.z = 0.16; g.add(roofLeft);
     const roofRight = new THREE.Mesh(new THREE.BoxGeometry(28, 0.25, 18.5), darkZincMat); roofRight.position.set(10.5, 7.7, 15.2); roofRight.rotation.z = -0.16; g.add(roofRight);
     const sackMat = new THREE.MeshLambertMaterial({ color: 0x3b3834 }), sackLightMat = new THREE.MeshLambertMaterial({ color: 0xc8bca8 }), tarpBlueMat = new THREE.MeshLambertMaterial({ color: 0x2c3e50 }), tarpGrayMat = new THREE.MeshLambertMaterial({ color: 0x636e72 });
@@ -455,8 +521,9 @@ try {
       const bk = new THREE.Mesh(bucketGeo, prodMats.bucket); bk.position.set(-1.55, 0.25, 0.75); sg.add(bk); sg.position.set(sx, 0, sz); sg.rotation.y = rotY; g.add(sg); addUmbrella(sx + 0.5, sz - 0.6, umbIdx, (umbIdx % 2 === 0 ? 0.1 : -0.08), 0.08, 0.95);
     }
     [[-28,-14,0.1,0,'pepper','tomato'],[-18,-12,-0.15,1,'sweetPotato','orange'],[-6,-15,0.08,2,'pineapple','pepper'],[7,-14,-0.1,3,'tomato','sweetPotato'],[18,-12,0.2,0,'orange','pineapple'],[-26,-2,-0.12,2,'pepper','sweetPotato'],[-12,0,0.14,3,'tomato','orange'],[3,-1,-0.08,1,'pineapple','tomato'],[15,1,0.15,2,'pepper','orange'],[-22,9,0.05,1,'sweetPotato','pepper'],[-5,10,-0.12,0,'tomato','pineapple']].forEach(st => addGroundStall(...st));
-    [[27, -4, tarpGrayMat], [-33, 6, tarpBlueMat]].forEach(t => { const tx = t[0], tz = t[1]; [-2.5, 2.5].forEach(ox => [-2, 2].forEach(oz => mkBox(g, 0.14, 2.8, 0.14, pWood, tx + ox, 1.4, tz + oz, true))); mkBox(g, 5.6, 0.12, 4.6, t[2], tx, 2.85, tz, true).rotation.x = 0.12; mkBox(g, 2.8, 0.85, 1.2, pWood, tx, 0.42, tz, true); });
+    [[27, -4, tarpGrayMat], [-33, 6, tarpBlueMat]].forEach(t => { const tx = t[0], tz = t[1]; [-2.5, 2.5].forEach(ox => [-2, 2].forEach(oz => mkBox(g, 0.14, 2.8, 0.14, pWood, tx + ox, 1.4, tz + oz, true))); mkBox(g, 5.6, 0.12, 4.6, t[2], tx, 2.85, tz, true).rotation.x = 0.12; mkBox(g, 2.8, 0.85, 1.2, pWood, tx, 0.42, tz, true); addSolidBox(MARKET_CX + tx, MARKET_CZ + tz, 2.8, 1.2); });
     g.position.set(MARKET_CX, 0, MARKET_CZ); scene.add(g);
+    addSolidBox(MARKET_CX - 6.5, MARKET_CZ - 24.5, 0.6, 0.6); addSolidBox(MARKET_CX + 6.5, MARKET_CZ - 24.5, 0.6, 0.6);
     solidBoxes.push({ minX: MARKET_CX - 30, maxX: MARKET_CX + 23, minZ: MARKET_CZ + 22.4, maxZ: MARKET_CZ + 23.6 }, { minX: MARKET_CX + 21.4, maxX: MARKET_CX + 22.6, minZ: MARKET_CZ + 7, maxZ: MARKET_CZ + 23.5 }, { minX: MARKET_CX - 2, maxX: MARKET_CX + 22, minZ: MARKET_CZ + 11.4, maxZ: MARKET_CZ + 12.6 }, { minX: MARKET_CX + 23, maxX: MARKET_CX + 32, minZ: MARKET_CZ + 2, maxZ: MARKET_CZ + 17.5 });
   }
   createCalembaInformalMarket();
@@ -484,7 +551,9 @@ try {
     const sP = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.08, 3.6, 6), mM); sP.position.set(-5.2, 1.85, -1.6); g.add(sP);
     const bMat = new THREE.MeshLambertMaterial({ map: mkTex(256, 128, ctx => { ctx.fillStyle = '#0984e3'; ctx.fillRect(0, 0, 256, 128); ctx.strokeStyle = '#f1c40f'; ctx.lineWidth = 8; ctx.strokeRect(4, 4, 248, 120); ctx.fillStyle = '#fff'; ctx.font = 'bold 26px Arial, sans-serif'; ctx.textAlign = 'center'; ctx.fillText(title, 128, 48); ctx.fillStyle = '#feca57'; ctx.font = 'bold 18px Arial, sans-serif'; ctx.fillText(routeText, 128, 86); ctx.fillStyle = '#dff9fb'; ctx.font = 'bold 14px Arial, sans-serif'; ctx.fillText('PARAGEM CANDONGUEIRO', 128, 110); }) });
     mkBox(g, 2.4, 1.2, 0.12, [mM, mM, mM, mM, bMat, bMat], -5.2, 3.4, -1.6); g.position.set(x, 0, z); scene.add(g);
+    addSolidBox(x, z + 0.9, 6.6, 1.0);
     const van = createCandongueiro3D(); van.position.set(x, 0, z - 4.5); van.rotation.y = Math.PI / 2;
+    staticVehicles.push({ x, z: z - 4.5, angle: Math.PI / 2, hw: 1.12, hl: 2.55 });
   }
   createParagem(-24, 12.0, 'PARAGEM CENTRO', 'Calemba 2 • Kilamba'); createParagem(-232, 12.0, 'PARAGEM CALEMBA 2', 'Centro • Kilamba'); createParagem(245, 12.0, 'PARAGEM KILAMBA', 'Centro • Calemba 2');
 
@@ -572,7 +641,7 @@ try {
     const qm = createHuman(q.shirt, 0x9c5527, 0x151517, 0x2f3640, 0x1c2a44, { gender: 'female', style: q.style, hairStyle: 'lenco' });
     qm.position.set(q.x, -0.45, q.z); qm.rotation.y = q.ry; qm.userData.legL.rotation.x = -1.35; qm.userData.legR.rotation.x = -1.35; qm.userData.armL.rotation.x = -0.55; qm.userData.armR.rotation.x = -0.55;
   });
-  [{ x: 137, z: 115, angle: -0.45 }, { x: 183, z: 115, angle: 0.45 }, { x: 160, z: 119, angle: Math.PI }].forEach(p => { const officer = createHuman(0x142746, 0x9c5527, 0x111820, 0x111820, 0x182338); officer.position.set(p.x, 0, p.z); officer.rotation.y = p.angle; });
+  [{ x: 137, z: 115, angle: -0.45 }, { x: 183, z: 115, angle: 0.45 }, { x: 160, z: 119, angle: Math.PI }].forEach(p => { const officer = createHuman(0x142746, 0x9c5527, 0x111820, 0x111820, 0x182338); officer.position.set(p.x, 0, p.z); officer.rotation.y = p.angle; solidCircles.push({ x: p.x, z: p.z, r: 0.5 }); });
 
   function createCar3D(color) {
     const g = new THREE.Group(), hlM = new THREE.MeshBasicMaterial({ color: 0xdff9fb }), tlM = new THREE.MeshBasicMaterial({ color: 0xff4757 }), wG = new THREE.CylinderGeometry(0.42, 0.42, 0.32, isMobilePhone ? 8 : 14), wM = new THREE.MeshLambertMaterial({ color: 0x111111 });
@@ -588,11 +657,11 @@ try {
   window.selectGender = g => { myAvatar.gender = g === 'female' ? 'female' : 'male'; localStorage.setItem('neocity_player_gender', myAvatar.gender); document.getElementById('btn-gender-male').classList.toggle('selected', myAvatar.gender === 'male'); document.getElementById('btn-gender-female').classList.toggle('selected', myAvatar.gender === 'female'); rebuildPlayerAvatar(); };
   renderAvatarSwatches(); window.selectGender(myAvatar.gender);
 
-  const drivableCars = [{ name: 'Carro Desportivo', mesh: createCar3D(0xff4757), x: 5, z: 14, angle: 0, speed: 0 }, { name: 'Candongueiro', mesh: createCandongueiro3D(), x: -16, z: -8, angle: Math.PI / 2, speed: 0 }, { name: 'Candongueiro', mesh: createCandongueiro3D(), x: 10, z: 26, angle: 0, speed: 0 }, { name: 'Candongueiro Kilamba', mesh: createCandongueiro3D(), x: 205, z: 12, angle: 0, speed: 0 }, { name: 'Carro Desportivo', mesh: createCar3D(0xfeca57), x: 294, z: -14, angle: Math.PI / 2, speed: 0 }, { name: 'Candongueiro Calemba 2', mesh: createCandongueiro3D(), x: -288, z: -12, angle: Math.PI, speed: 0 }];
+  const drivableCars = [{ name: 'Carro Desportivo', mesh: createCar3D(0xff4757), x: 5, z: 14, angle: 0, speed: 0, hw: 1.15, hl: 2.3 }, { name: 'Candongueiro', mesh: createCandongueiro3D(), x: -16, z: -8, angle: Math.PI / 2, speed: 0, hw: 1.12, hl: 2.55 }, { name: 'Candongueiro', mesh: createCandongueiro3D(), x: 10, z: 26, angle: 0, speed: 0, hw: 1.12, hl: 2.55 }, { name: 'Candongueiro Kilamba', mesh: createCandongueiro3D(), x: 205, z: 12, angle: 0, speed: 0, hw: 1.12, hl: 2.55 }, { name: 'Carro Desportivo', mesh: createCar3D(0xfeca57), x: 294, z: -14, angle: Math.PI / 2, speed: 0, hw: 1.15, hl: 2.3 }, { name: 'Candongueiro Calemba 2', mesh: createCandongueiro3D(), x: -288, z: -12, angle: Math.PI, speed: 0, hw: 1.12, hl: 2.55 }];
   drivableCars.forEach(c => { c.mesh.position.set(c.x, 0, c.z); c.mesh.rotation.y = c.angle; });
-  const traffic = [{ mesh: createCandongueiro3D(), x: -3.5, z: -180, vz: 0.45, vx: 0, angle: 0 }, { mesh: createCandongueiro3D(), x: 3.5, z: 190, vz: -0.44, vx: 0, angle: Math.PI }, { mesh: createCandongueiro3D(), x: -240, z: 3.5, vz: 0, vx: 0.46, angle: Math.PI / 2 }, { mesh: createCandongueiro3D(), x: 280, z: -3.5, vz: 0, vx: -0.46, angle: -Math.PI / 2 }, { mesh: createCar3D(0xfeca57), x: 61.5, z: -120, vz: 0.48, vx: 0, angle: 0 }, { mesh: createCar3D(0xffffff), x: 196.5, z: -80, vz: 0.45, vx: 0, angle: 0 }, { mesh: createCandongueiro3D(), x: 293.5, z: 120, vz: -0.42, vx: 0, angle: Math.PI }, { mesh: createCandongueiro3D(), x: -298.5, z: -115, vz: 0.44, vx: 0, angle: 0 }, { mesh: createCar3D(0xffffff), x: -291.5, z: 115, vz: -0.46, vx: 0, angle: Math.PI }];
+  const traffic = [{ mesh: createCandongueiro3D(), x: -3.5, z: -180, vz: 0.45, vx: 0, angle: 0, hw: 1.12, hl: 2.55 }, { mesh: createCandongueiro3D(), x: 3.5, z: 190, vz: -0.44, vx: 0, angle: Math.PI, hw: 1.12, hl: 2.55 }, { mesh: createCandongueiro3D(), x: -240, z: 3.5, vz: 0, vx: 0.46, angle: Math.PI / 2, hw: 1.12, hl: 2.55 }, { mesh: createCandongueiro3D(), x: 280, z: -3.5, vz: 0, vx: -0.46, angle: -Math.PI / 2, hw: 1.12, hl: 2.55 }, { mesh: createCar3D(0xfeca57), x: 61.5, z: -120, vz: 0.48, vx: 0, angle: 0, hw: 1.15, hl: 2.3 }, { mesh: createCar3D(0xffffff), x: 196.5, z: -80, vz: 0.45, vx: 0, angle: 0, hw: 1.15, hl: 2.3 }, { mesh: createCandongueiro3D(), x: 293.5, z: 120, vz: -0.42, vx: 0, angle: Math.PI, hw: 1.12, hl: 2.55 }, { mesh: createCandongueiro3D(), x: -298.5, z: -115, vz: 0.44, vx: 0, angle: 0, hw: 1.12, hl: 2.55 }, { mesh: createCar3D(0xffffff), x: -291.5, z: 115, vz: -0.46, vx: 0, angle: Math.PI, hw: 1.15, hl: 2.3 }];
   traffic.forEach(c => { c.mesh.rotation.y = c.angle; });
-  [{ x: 160, z: 130, angle: Math.PI }, { x: 200, z: 95, angle: -Math.PI / 2 }, { x: 130, z: 95, angle: Math.PI / 2 }].forEach(p => { const pc = createPoliciaNacional3D(); pc.position.set(p.x, 0, p.z); pc.rotation.y = p.angle; pc.scale.set(0.92, 0.92, 0.92); });
+  [{ x: 160, z: 130, angle: Math.PI }, { x: 200, z: 95, angle: -Math.PI / 2 }, { x: 130, z: 95, angle: Math.PI / 2 }].forEach(p => { const pc = createPoliciaNacional3D(); pc.position.set(p.x, 0, p.z); pc.rotation.y = p.angle; pc.scale.set(0.92, 0.92, 0.92); staticVehicles.push({ x: p.x, z: p.z, angle: p.angle, hw: 1.10, hl: 2.65 }); });
 
   const policeRoute = [{ x: 0, z: 0 }, { x: -195, z: 0 }, { x: -295, z: 0 }, { x: -295, z: -65 }, { x: -195, z: -65 }, { x: -195, z: -130 }, { x: -295, z: -130 }, { x: -295, z: 65 }, { x: -195, z: 65 }, { x: -195, z: 130 }, { x: -295, z: 130 }, { x: -295, z: 0 }, { x: -65, z: 0 }, { x: -65, z: 130 }, { x: 65, z: 130 }, { x: 65, z: -130 }, { x: 0, z: -130 }, { x: 0, z: 0 }, { x: 200, z: 0 }, { x: 200, z: 130 }, { x: 290, z: 130 }, { x: 290, z: -130 }, { x: 380, z: -130 }, { x: 380, z: 0 }, { x: 200, z: 0 }];
   const policePatrol = { mesh: createPoliciaNacional3D(), x: -55, z: 0, angle: -Math.PI / 2, routeIndex: 1, targetMarginal: null };
@@ -601,8 +670,7 @@ try {
   const bots = [
     { name: 'Bumba', role: 'Lotador — Calemba 2', rewarded: false, stationary: true, fixedAngle: 0, isLotador: true, shoutLines: ['📣 CALEMBA 2! CALEMBA 2!', '🚐 Sobe já, Calemba 2 direto!'], mesh: createHuman(0x1e272e, 0x8d5524, 0x151517, 0x00c8ff), x: -26.5, z: 9.5, vx: 0, vz: 0, cycle: 0, dialogue: { start: { text: 'Calemba 2! Calemba 2! Tá a sair agora! Sobe no Candongueiro por apenas 20kz!', options: [{ label: '🚐 Apanhar Candongueiro para Calemba 2 (20kz)', next: 'ride_calemba' }, { label: 'Onde fica essa paragem?', next: 'info' }] }, ride_calemba: { text: 'Bora!', ride: { x: -232, z: 10.6, zone: 'Calemba 2', cost: 20 } }, info: { text: 'É a Paragem do Centro! Eu chamo para Calemba 2 e o Juca ali ao lado chama para o Kilamba.', options: [{ label: 'Valeu!', next: 'start' }] } } },
     { name: 'Juca', role: 'Lotador — Kilamba', rewarded: false, stationary: true, fixedAngle: 0, isLotador: true, shoutLines: ['📣 KILAMBA! KILAMBA!', '🚐 Centralidade do Kilamba — Entra!'], mesh: createHuman(0x2f3640, 0xa5694f, 0x151517, 0xfeca57), x: -20.5, z: 9.5, vx: 0, vz: 0, cycle: 0, dialogue: { start: { text: 'Kilamba! Kilamba! Centralidade do Kilamba direto! Só falta um lugar, sobe já!', options: [{ label: '🚐 Apanhar Candongueiro para Kilamba (20kz)', next: 'ride_kilamba' }, { label: 'Quanto tempo demora?', next: 'time' }] }, ride_kilamba: { text: 'Bora!', ride: { x: 245, z: 10.6, zone: 'Centralidade do Kilamba', cost: 20 } }, time: { text: 'Num instante pela avenida principal! Só 20kz a corrida.', options: [{ label: 'Fixe!', next: 'start' }] } } },
-    { name: 'Puto Zéca', role: 'Lotador — Paragem Calemba 2', rewarded: false, stationary: true, fixedAngle: 0, isLotador: true, shoutLines: ['📣 CENTRO / KILAMBA!', '🚐 Paragem Calemba 2 — Sobe!'], mesh: createHuman(0x576574, 0x9c5527, 0x151517, 0x1dd1a1), x: -234.5, z: 9.5, vx: 0, vz: 0, cycle: 0, dialogue: { start: { text: 'Centro! Arreiou! Kilamba! Sobe já para sair de Calemba 2!', options: [{ label: '🚐 Ir para o Centro / Arreiou (20kz)', next: 'ride_centro' }, { label: '🚐 Ir direto para o Kilamba (20kz)', next: 'ride_kilamba' }] }, ride_centro: { text: 'Centro!', ride: { x: -24, z: 10.6, zone: 'Centro', cost: 20 } }, ride_kilamba: { text: 'Kilamba!', ride: { x: 245, z: 10.6, zone: 'Centralidade do Kilamba', cost: 20 } } } },
-    { name: 'Tchissola', role: 'Lotador — Paragem Kilamba', rewarded: false, stationary: true, fixedAngle: 0, isLotador: true, shoutLines: ['📣 CENTRO / CALEMBA 2!', '🚐 Paragem Kilamba — Entra!'], mesh: createHuman(0x222f3e, 0xb86b35, 0x151517, 0xff9f43), x: 242.5, z: 9.5, vx: 0, vz: 0, cycle: 0, dialogue: { start: { text: 'Centro! Arreiou! Calemba 2! O Candongueiro do Kilamba já vai arrancar!', options: [{ label: '🚐 Ir para o Centro / Arreiou (20kz)', next: 'ride_centro' }, { label: '🚐 Ir para Calemba 2 (20kz)', next: 'ride_calemba' }] }, ride_centro: { text: 'Centro!', ride: { x: -24, z: 10.6, zone: 'Centro', cost: 20 } }, ride_calemba: { text: 'Calemba 2!', ride: { x: -232, z: 10.6, zone: 'Calemba 2', cost: 20 } } } },
+    { name: 'Puto Zéca', role: 'Lotador — Paragem Calemba 2', rewarded: false, stationary: true, fixedAngle: 0, isLotador: true, shoutLines: ['📣 CENTRO / KILAMBA!', '🚐 Paragem Calemba 2 — Sobe!'], mesh: createHuman(0x576574, 0x9c5527, 0x151517, 0x1dd1a1), x: -234.5, z: 9.5, vx: 0, vz: 0, cycle: 0, dialogue: { start: { text: 'Centro! Arreiou! Kilamba! Sobe já para sair de Calemba 2!', options: [{ label: '🚐 Ir para o Centro / Arreiou (20kz)', next: 'ride_centro' }, { label: '🚐 Ir direto para o Kilamba (20kz)', next: 'ride_kilamba' }] }, ride_centro: { text: 'Centro!', ride: { x: -24, z: 10.6, zone: 'Centro', cost: 20 } }, ride_kilamba: { text: 'Kilamba!', ride: { x: 245, z: 10.6, zone: 'Centralidade do Kilamba', cost: 20 } } } },{ name: 'Tchissola', role: 'Lotador — Paragem Kilamba', rewarded: false, stationary: true, fixedAngle: 0, isLotador: true, shoutLines: ['📣 CENTRO / CALEMBA 2!', '🚐 Paragem Kilamba — Entra!'], mesh: createHuman(0x222f3e, 0xb86b35, 0x151517, 0xff9f43), x: 242.5, z: 9.5, vx: 0, vz: 0, cycle: 0, dialogue: { start: { text: 'Centro! Arreiou! Calemba 2! O Candongueiro do Kilamba já vai arrancar!', options: [{ label: '🚐 Ir para o Centro / Arreiou (20kz)', next: 'ride_centro' }, { label: '🚐 Ir para Calemba 2 (20kz)', next: 'ride_calemba' }] }, ride_centro: { text: 'Centro!', ride: { x: -24, z: 10.6, zone: 'Centro', cost: 20 } }, ride_calemba: { text: 'Calemba 2!', ride: { x: -232, z: 10.6, zone: 'Calemba 2', cost: 20 } } } },
     { name: 'Jandira', role: 'Passageira na Paragem', rewarded: false, stationary: true, fixedAngle: Math.PI, mesh: createHuman(0xff4757, 0xa5694f, 0x151517, 0xff4757, 0x1c2a44, { gender: 'female', style: 'casual', hairStyle: 'braids', hasBag: true }), x: -23.5, z: 11.4, vx: 0, vz: 0, cycle: 0, dialogue: { start: { text: 'Estou aqui na paragem à espera de ir para Calemba 2. Cuidado com os marginais lá!', options: [{ label: 'Há marginais em Calemba 2?', next: 'mov' }, { label: 'Boa viagem, Jandira!', next: 'bye' }] }, mov: { text: 'Sim! Mas se a Polícia Nacional os apanhar na estrada são logo presos!', options: [{ label: 'Obrigada!', next: 'start' }] }, bye: { text: 'Obrigada! Toma 10kz de boa sorte!', reward: 10, options: [{ label: 'Valeu!', next: 'start' }] } } },
     { name: 'Lúcia', role: 'Passageira em Calemba 2', rewarded: false, stationary: true, fixedAngle: Math.PI, mesh: createHuman(0xff6b81, 0x9c5527, 0x151517, 0xff6b81, 0x1c2a44, { gender: 'female', style: 'casual', hairStyle: 'puff', hasBag: true }), x: -229.5, z: 11.4, vx: 0, vz: 0, cycle: 0, dialogue: { start: { text: 'Ai, tanta poeira e ainda por cima marginais nos arredores de Calemba 2!', options: [{ label: 'Vou ter cuidado!', next: 'pao' }] }, pao: { text: 'Se correres para a estrada e a Polícia Nacional passar, ela prende logo o marginal!', options: [{ label: 'Boa dica!', next: 'start' }] } } },
     { name: 'Márcia', role: 'Passageira no Kilamba', rewarded: false, stationary: true, fixedAngle: Math.PI, mesh: createHuman(0x00d2d3, 0xc66f34, 0x151517, 0x00d2d3, 0x1c2a44, { gender: 'female', style: 'pano', hairStyle: 'lenco' }), x: 247.5, z: 11.4, vx: 0, vz: 0, cycle: 0, dialogue: { start: { text: 'Olá! Aqui na Paragem do Kilamba é bem seguro e organizado. Vais para o Centro?', options: [{ label: 'Adorei o teu pano!', next: 'style' }] }, style: { text: 'Obrigada! Gosto muito de vestir roupas tradicionais com cor!', options: [{ label: 'Está linda!', next: 'start' }] } } },
@@ -711,12 +779,12 @@ try {
   }
   function applySavedUserData(d) {
     player.money = typeof d.money === 'number' ? d.money : 200; player.x = typeof d.x === 'number' ? d.x : -12; player.z = typeof d.z === 'number' ? d.z : 10;
-    const sp = applySolidCollisions(player.x, player.z, 0.55); player.x = sp.x; player.z = sp.z;
-    player.y = (player.x > ARREIOU_CX - 12.6 && player.x < ARREIOU_CX + 12.6 && player.z > ARREIOU_CZ - 9.6 && player.z < ARREIOU_CZ + 9.6) ? 0.16 : 0;
     const bp = d.built_plots || {};
     if (bp._avatar) { myAvatar = { ...myAvatar, ...bp._avatar }; localStorage.setItem('neocity_player_gender', myAvatar.gender); localStorage.setItem('neocity_player_skin', String(myAvatar.skin)); localStorage.setItem('neocity_player_shirt', String(myAvatar.shirt)); rebuildPlayerAvatar(); }
-    player.mesh.position.set(player.x, player.y, player.z);
     savedBuiltPlots = {}; Object.keys(bp).forEach(k => { if (k !== '_avatar') { savedBuiltPlots[k] = bp[k]; applyPlotBuild(parseInt(k, 10), bp[k]); } });
+    const sp = applySolidCollisions(player.x, player.z, 0.55); player.x = sp.x; player.z = sp.z;
+    player.y = (player.x > ARREIOU_CX - 12.6 && player.x < ARREIOU_CX + 12.6 && player.z > ARREIOU_CZ - 9.6 && player.z < ARREIOU_CZ + 9.6) ? 0.16 : 0;
+    player.mesh.position.set(player.x, player.y, player.z);
     savedRewardedBots = d.rewarded_bots || {}; bots.forEach(b => { if (savedRewardedBots[b.name]) b.rewarded = true; });
   }
 
@@ -911,8 +979,16 @@ try {
 
   window.toggleCar = () => {
     if (!hasJoined) return;
-    if (player.currentCar) { const car = player.currentCar; player.currentCar = null; player.mesh.visible = true; const ep = applySolidCollisions(car.x + Math.cos(car.angle) * 2.8, car.z - Math.sin(car.angle) * 2.8, 0.55); player.x = ep.x; player.z = ep.z; car.speed = 0; savePlayerProgress(); }
-    else { let cl = null, bd = 6.0; for (const c of drivableCars) { const d = Math.hypot(player.x - c.x, player.z - c.z); if (d < bd) { bd = d; cl = c; } } if (cl) { if (activeChatBot) window.closeChat(); player.currentCar = cl; player.mesh.visible = false; showToast(`🚐 A conduzir: ${cl.name}!`); } else showToast('Aproxima-te de um carro ou Candongueiro!'); }
+    if (player.currentCar) {
+      const car = player.currentCar; player.currentCar = null; player.mesh.visible = true;
+      let ep = applySolidCollisions(car.x + Math.cos(car.angle) * 2.8, car.z - Math.sin(car.angle) * 2.8, 0.55, { returnHit: true });
+      if (ep.hit) ep = applySolidCollisions(car.x - Math.cos(car.angle) * 2.8, car.z + Math.sin(car.angle) * 2.8, 0.55, { returnHit: true });
+      player.x = ep.x; player.z = ep.z; car.speed = 0; savePlayerProgress();
+    } else {
+      let cl = null, bd = 6.0; for (const c of drivableCars) { const d = Math.hypot(player.x - c.x, player.z - c.z); if (d < bd) { bd = d; cl = c; } }
+      if (cl) { if (activeChatBot) window.closeChat(); player.currentCar = cl; player.mesh.visible = false; showToast(`🚐 A conduzir: ${cl.name}!`); }
+      else showToast('Aproxima-te de um carro ou Candongueiro!');
+    }
   };
 
   let nearPlotIndex = -1;
@@ -923,13 +999,28 @@ try {
   let lastMoneyUi = -1, lastBuffText = '', lastTimeText = '', lastShopVis = false, lastBuildVis = false;
   const dayCol = new THREE.Color(0x74b9ff), duskCol = new THREE.Color(0xe17055), nightCol = new THREE.Color(0x090d16), dustHazeDayCol = new THREE.Color(0xc49a74), dustHazeNightCol = new THREE.Color(0x1f1914), skyTarget = new THREE.Color(0x74b9ff);
   const projVec = new THREE.Vector3(), camTargetVec = new THREE.Vector3(), arreiouOuterCarBox = { minX: ARREIOU_CX - 13.5, maxX: ARREIOU_CX + 13.5, minZ: ARREIOU_CZ - 10.5, maxZ: ARREIOU_CZ + 10.5 };
+
+  function resolveCarCollisions(car, nX, nZ) {
+    const sinA = Math.sin(car.angle), cosA = Math.cos(car.angle), offset = 1.15, rad = 1.22;
+    let x = nX, z = nZ, anyHit = false;
+    for (let pass = 0; pass < 2; pass++) {
+      for (const s of [offset, -offset]) {
+        const bx = x + sinA * s, bz = z + cosA * s;
+        const res = applySolidCollisions(bx, bz, rad, { skipCar: car, returnHit: true });
+        if (res.hit) { x += res.x - bx; z += res.z - bz; anyHit = true; }
+        const ab = resolveCircleAABB(x + sinA * s, z + cosA * s, rad, arreiouOuterCarBox);
+        if (ab.x !== x + sinA * s || ab.z !== z + cosA * s) { x += ab.x - (x + sinA * s); z += ab.z - (z + cosA * s); anyHit = true; }
+      }
+    }
+    return { x, z, hit: anyHit };
+  }
+
   document.getElementById('loading-screen').style.display = 'none'; document.getElementById('login-screen').style.display = 'flex';
 
   function animate() {
     requestAnimationFrame(animate);
     const nowPerf = performance.now(), dtSec = Math.min(1, Math.max(0, (nowPerf - lastFrameTime) / 1000)); lastFrameTime = nowPerf;
 
-    // Auto-ajuste de desempenho no telemóvel se FPS cair abaixo de 26
     if (hasJoined && isMobilePhone) {
       fpsFrames++;
       if (nowPerf - fpsLastCheck >= 2500) {
@@ -988,7 +1079,8 @@ try {
       if (fwd > 0.15) car.speed = Math.min(maxSpd, car.speed + 0.032); else if (fwd < -0.15) car.speed = Math.max(-0.4, car.speed - 0.032); else car.speed *= 0.95;
       if (Math.abs(car.speed) > 0.03) car.angle -= Math.max(-1, Math.min(1, turn)) * 0.042 * (car.speed > 0 ? 1 : -1);
       const nX = Math.max(-420, Math.min(420, car.x + Math.sin(car.angle) * car.speed)), nZ = Math.max(-320, Math.min(320, car.z + Math.cos(car.angle) * car.speed));
-      const cS = resolveCircleAABB(nX, nZ, 2.3, arreiouOuterCarBox); if (cS.x !== nX || cS.z !== nZ) car.speed *= 0.2;
+      const cS = resolveCarCollisions(car, nX, nZ);
+      if (cS.hit) car.speed *= 0.25;
       car.x = cS.x; car.z = cS.z; car.mesh.position.set(car.x, 0, car.z); car.mesh.rotation.y = car.angle;
       player.x = car.x; player.z = car.z; camYaw += (car.angle + Math.PI - camYaw) * 0.04;
     } else {
@@ -1000,7 +1092,11 @@ try {
         player.x = safe.x; player.z = safe.z; player.mesh.rotation.y = mA; player.walkCycle += (boost || hasSpeedBuff) ? 0.32 : 0.18;
         const sw = Math.sin(player.walkCycle) * 0.65;
         player.mesh.userData.legL.rotation.x = sw; player.mesh.userData.legR.rotation.x = -sw; player.mesh.userData.armL.rotation.x = -sw; player.mesh.userData.armR.rotation.x = sw;
-      } else { player.mesh.userData.legL.rotation.x = 0; player.mesh.userData.legR.rotation.x = 0; player.mesh.userData.armL.rotation.x = 0; player.mesh.userData.armR.rotation.x = 0; }
+      } else {
+        const safeIdle = applySolidCollisions(player.x, player.z, 0.55);
+        player.x = safeIdle.x; player.z = safeIdle.z;
+        player.mesh.userData.legL.rotation.x = 0; player.mesh.userData.legR.rotation.x = 0; player.mesh.userData.armL.rotation.x = 0; player.mesh.userData.armR.rotation.x = 0;
+      }
       const gY = (player.x > ARREIOU_CX - 12.6 && player.x < ARREIOU_CX + 12.6 && player.z > ARREIOU_CZ - 9.6 && player.z < ARREIOU_CZ + 9.6) ? 0.16 : 0;
       player.y += player.vy; if (player.y > gY) player.vy -= 0.018; else { player.y = gY; player.vy = 0; }
       player.mesh.position.set(player.x, player.y, player.z);
@@ -1031,7 +1127,18 @@ try {
     const showShop = Boolean(hasJoined && isInsideArreiou && (Math.hypot(player.x - (ARREIOU_CX - 7.5), player.z - (ARREIOU_CZ + 3.6)) < 4.5 || Math.hypot(player.x - (ARREIOU_CX + 6.8), player.z - (ARREIOU_CZ + 2.5)) < 4.5));
     if (showShop !== lastShopVis) { lastShopVis = showShop; document.getElementById('shop-panel').style.display = showShop ? 'flex' : 'none'; }
 
-    traffic.forEach(c => { c.x += c.vx; c.z += c.vz; if (c.z > 280) c.z = -280; if (c.z < -280) c.z = 280; if (c.x > 410) c.x = -410; if (c.x < -410) c.x = 410; c.mesh.position.set(c.x, 0, c.z); });
+    traffic.forEach(c => {
+      const lx = c.x + Math.sin(c.angle) * 3.8, lz = c.z + Math.cos(c.angle) * 3.8;
+      let blocked = !player.currentCar && Math.hypot(player.x - lx, player.z - lz) < 2.2;
+      if (!blocked) {
+        for (const dc of drivableCars) if (Math.hypot(dc.x - lx, dc.z - lz) < 3.0) { blocked = true; break; }
+      }
+      if (!blocked) {
+        c.x += c.vx; c.z += c.vz;
+        if (c.z > 280) c.z = -280; if (c.z < -280) c.z = 280; if (c.x > 410) c.x = -410; if (c.x < -410) c.x = 410;
+      }
+      c.mesh.position.set(c.x, 0, c.z);
+    });
 
     {
       const redOn = Math.floor(nowPerf / (policePatrol.targetMarginal ? 130 : 280)) % 2 === 0;
@@ -1042,6 +1149,11 @@ try {
         for (const m of marginais) if (m.arrestState === 'free' && isOnRoad(m.x, m.z)) { const dm = Math.hypot(m.x - policePatrol.x, m.z - policePatrol.z); if (dm < bestD) { bestD = dm; bestM = m; } }
         if (bestM) policePatrol.targetMarginal = bestM;
       }
+      const isPolFrontBlocked = (nx, nz, ang) => {
+        const fx = nx + Math.sin(ang) * 3.4, fz = nz + Math.cos(ang) * 3.4;
+        for (const dc of drivableCars) if (Math.hypot(dc.x - fx, dc.z - fz) < 2.9) return true;
+        return false;
+      };
       if (policePatrol.targetMarginal) {
         const tm = policePatrol.targetMarginal;
         if (tm.arrestState !== 'free') policePatrol.targetMarginal = null;
@@ -1052,12 +1164,24 @@ try {
             tm.arrestState = 'prisoner'; tm.chasing = false; tm.chaseElapsedMs = 0; tm.prisonerUntil = now + 18000;
             policePatrol.targetMarginal = null;
             showToast(`🚓 Polícia Nacional prendeu ${tm.name} na estrada e levou-o!`);
-          } else { policePatrol.x += (dx / dist) * 0.64; policePatrol.z += (dz / dist) * 0.64; policePatrol.angle = Math.atan2(dx, dz); }
+          } else {
+            const ang = Math.atan2(dx, dz);
+            policePatrol.angle = ang;
+            if (!isPolFrontBlocked(policePatrol.x, policePatrol.z, ang)) {
+              policePatrol.x += (dx / dist) * 0.64; policePatrol.z += (dz / dist) * 0.64;
+            }
+          }
         }
       } else {
         const wp = policeRoute[policePatrol.routeIndex], dx = wp.x - policePatrol.x, dz = wp.z - policePatrol.z, dist = Math.hypot(dx, dz);
         if (dist < 2.2) policePatrol.routeIndex = (policePatrol.routeIndex + 1) % policeRoute.length;
-        else { policePatrol.x += (dx / dist) * 0.48; policePatrol.z += (dz / dist) * 0.48; policePatrol.angle = Math.atan2(dx, dz); }
+        else {
+          const ang = Math.atan2(dx, dz);
+          policePatrol.angle = ang;
+          if (!isPolFrontBlocked(policePatrol.x, policePatrol.z, ang)) {
+            policePatrol.x += (dx / dist) * 0.48; policePatrol.z += (dz / dist) * 0.48;
+          }
+        }
       }
       policePatrol.mesh.position.set(policePatrol.x, 0, policePatrol.z);
       policePatrol.mesh.rotation.y = policePatrol.angle;
@@ -1085,7 +1209,9 @@ try {
       }
       else if (b.calembaBot) { bx = Math.max(-340, Math.min(-210, bx)); bz = Math.max(-45, Math.min(45, bz)); }
       else { bx = Math.max(-220, Math.min(390, bx)); bz = Math.max(-220, Math.min(220, bz)); }
-      const bS = applySolidCollisions(bx, bz, 0.55); b.x = bS.x; b.z = bS.z; b.mesh.position.set(b.x, botY, b.z); b.mesh.rotation.y = Math.atan2(b.vx, b.vz);
+      const bS = applySolidCollisions(bx, bz, 0.55, { returnHit: true });
+      if (bS.hit) { const tmp = b.vx; b.vx = -b.vz + (Math.random() - 0.5) * 0.03; b.vz = tmp + (Math.random() - 0.5) * 0.03; }
+      b.x = bS.x; b.z = bS.z; b.mesh.position.set(b.x, botY, b.z); b.mesh.rotation.y = Math.atan2(b.vx, b.vz);
       b.cycle += 0.14; const sw = Math.sin(b.cycle) * 0.55;
       b.mesh.userData.legL.rotation.x = sw; b.mesh.userData.legR.rotation.x = -sw;
       b.mesh.userData.armL.rotation.x = b.marketZungueira ? -sw * 0.45 : -sw;
@@ -1098,7 +1224,9 @@ try {
       let zx = z.x + z.vx, zz = z.z + z.vz;
       if (zx < MARKET_CX - 38 || zx > MARKET_CX + 22) { z.vx *= -1; zx = Math.max(MARKET_CX - 38, Math.min(MARKET_CX + 22, zx)); }
       if (zz < MARKET_CZ - 23 || zz > MARKET_CZ + 16) { z.vz *= -1; zz = Math.max(MARKET_CZ - 23, Math.min(MARKET_CZ + 16, zz)); }
-      const zS = applySolidCollisions(zx, zz, 0.55); z.x = zS.x; z.z = zS.z; z.mesh.position.set(z.x, 0.03, z.z); z.mesh.rotation.y = Math.atan2(z.vx, z.vz);
+      const zS = applySolidCollisions(zx, zz, 0.55, { returnHit: true });
+      if (zS.hit) { z.vx *= -1; z.vz *= -1; }
+      z.x = zS.x; z.z = zS.z; z.mesh.position.set(z.x, 0.03, z.z); z.mesh.rotation.y = Math.atan2(z.vx, z.vz);
       z.cycle += 0.14; const sw = Math.sin(z.cycle) * 0.5;
       z.mesh.userData.legL.rotation.x = sw; z.mesh.userData.legR.rotation.x = -sw; z.mesh.userData.armL.rotation.x = -sw * 0.45;
       if (z.steadyHand) { z.mesh.userData.armR.rotation.x = -2.45 + Math.sin(z.cycle) * 0.04; z.mesh.userData.armR.rotation.z = 0.22; }
@@ -1122,7 +1250,7 @@ try {
         m.mesh.position.set(m.x, 0.02, m.z); m.mesh.rotation.set(0, policePatrol.angle + Math.PI, 0);
         m.mesh.userData.legL.rotation.x = -1.25; m.mesh.userData.legR.rotation.x = -1.25; m.mesh.userData.armL.rotation.x = -0.4; m.mesh.userData.armR.rotation.x = -0.4; return;
       }
-      if (m.arrestState === 'jailed') { if (now >= m.respawnAt) { m.arrestState = 'free'; m.x = m.spawnX; m.z = m.spawnZ; m.mesh.position.set(m.x, 0, m.z); m.mesh.rotation.set(0, 0, 0); m.mesh.userData.legL.rotation.x = 0; m.mesh.userData.legR.rotation.x = 0; m.mesh.userData.armL.rotation.x = 0; m.mesh.userData.armR.rotation.x = 0; m.mesh.visible = true; m.cooldownUntil = now + 4000; } return; }
+      if (m.arrestState === 'jailed') { if (now >= m.respawnAt) { const rs = applySolidCollisions(m.spawnX, m.spawnZ, 0.7, { vehicles: false }); m.arrestState = 'free'; m.x = rs.x; m.z = rs.z; m.mesh.position.set(m.x, 0, m.z); m.mesh.rotation.set(0, 0, 0); m.mesh.userData.legL.rotation.x = 0; m.mesh.userData.legR.rotation.x = 0; m.mesh.userData.armL.rotation.x = 0; m.mesh.userData.armR.rotation.x = 0; m.mesh.visible = true; m.cooldownUntil = now + 4000; } return; }
       const dist = Math.hypot(player.x - m.x, player.z - m.z);
       if (!m.chasing && hasJoined && !player.currentCar && player.money > 0 && playerInCalemba && now > m.cooldownUntil && dist < 24) { m.chasing = true; m.chaseElapsedMs = 0; if (now - lastMugWarnAt > 4500) { lastMugWarnAt = now; showToast('🚨 Marginal: "Xé mo puto, vem aqui, não corre!"'); } }
       if (m.chasing) {
@@ -1136,7 +1264,9 @@ try {
       }
       m.mesh.rotation.x = 0; if (Math.random() < 0.015) { m.vx = (Math.random() - 0.5) * 0.08; m.vz = (Math.random() - 0.5) * 0.08; }
       let mx = m.x + m.vx, mz = m.z + m.vz; if (mx < -368 || mx > -176) { m.vx *= -1; mx = Math.max(-368, Math.min(-176, mx)); } if (mz < -126 || mz > 126) { m.vz *= -1; mz = Math.max(-126, Math.min(126, mz)); }
-      const s = applySolidCollisions(mx, mz, 0.55); m.x = s.x; m.z = s.z; m.mesh.position.set(m.x, 0, m.z); m.mesh.rotation.y = Math.atan2(m.vx, m.vz); m.cycle += 0.13; const sw = Math.sin(m.cycle) * 0.5; m.mesh.userData.legL.rotation.x = sw; m.mesh.userData.legR.rotation.x = -sw; m.mesh.userData.armL.rotation.x = -sw; m.mesh.userData.armR.rotation.x = sw;
+      const s = applySolidCollisions(mx, mz, 0.55, { returnHit: true });
+      if (s.hit) { m.vx *= -1; m.vz *= -1; }
+      m.x = s.x; m.z = s.z; m.mesh.position.set(m.x, 0, m.z); m.mesh.rotation.y = Math.atan2(m.vx, m.vz); m.cycle += 0.13; const sw = Math.sin(m.cycle) * 0.5; m.mesh.userData.legL.rotation.x = sw; m.mesh.userData.legR.rotation.x = -sw; m.mesh.userData.armL.rotation.x = -sw; m.mesh.userData.armR.rotation.x = sw;
     });
 
     if (player.money !== lastMoneyUi) { lastMoneyUi = player.money; document.getElementById('money-ui').innerText = player.money; }
